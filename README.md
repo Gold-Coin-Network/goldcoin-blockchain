@@ -2,8 +2,6 @@
 
 Let's mine gold !
 
-Project roadmap soon ! Main focus was on getting the blockchain running and the GUI fixed
-
 Full node : dns-introducer.goldcoin-network.net:7999
 
 Windows version available ! Some bugs may occur

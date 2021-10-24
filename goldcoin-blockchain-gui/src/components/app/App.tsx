@@ -38,22 +38,30 @@ const GlobalStyle = createGlobalStyle`
   ul .MuiBox-root {
     outline: none;
   }
+  
+  #root > .MuiBox-root {
+    background:
+      url("/cbackground_shapes.png") right bottom no-repeat, /// add the right image !!!
+      linear-gradient(142deg, #a88e00, #756300 1%, #171717 30%, #000000);
+  }
 `;
 
 export default function App() {
   const { value: darkMode } = useDarkMode();
   const [locale] = useLocale(defaultLocale);
-
+  
   const theme = useMemo(() => {
     const material = getMaterialLocale(locale);
-    return darkMode ? darkTheme(material) : lightTheme(material);
+    return darkMode
+      ? darkTheme(material)
+      : darkTheme(material); // only dark mode
   }, [locale, darkMode]);
 
   // get the daemon's uri from global storage (put there by loadConfig)
   let daemon_uri = null;
   if (isElectron()) {
     const electron = window.require('electron');
-    const { remote: r } = electron;
+    const { remote : r } = electron;
     daemon_uri = r.getGlobal('daemon_rpc_ws');
   }
 

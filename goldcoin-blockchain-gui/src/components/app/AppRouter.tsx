@@ -24,14 +24,14 @@ export default function AppRouter() {
   if (exiting) {
     return (
       <LayoutLoading>
-        <Trans>Closing down node and server</Trans>
+        <Trans>Closing down Goldcoin node and server</Trans>
       </LayoutLoading>
     );
   }
   if (!walletConnected) {
     return (
       <LayoutLoading>
-        <Trans>Connecting to wallet</Trans>
+        <Trans>Connecting to OZT wallet</Trans>
       </LayoutLoading>
     );
   }

@@ -21,8 +21,6 @@ import LayoutMain from '../layout/LayoutMain';
 import FullNodeBlockSearch from './FullNodeBlockSearch';
 import FullNodeCards from './card/FullNodeCards';
 
-/* global BigInt */
-
 const cols = [
   {
     minWidth: '250px',
@@ -321,7 +319,7 @@ const BlocksCard = () => {
 export default function FullNode() {
   return (
     <LayoutMain title={<Trans>Full Node</Trans>}>
-      <Flex gap={1}>
+      <Flex gap={5}>
         <Typography variant="h5" gutterBottom>
           <Trans>Full Node Overview</Trans>
         </Typography>

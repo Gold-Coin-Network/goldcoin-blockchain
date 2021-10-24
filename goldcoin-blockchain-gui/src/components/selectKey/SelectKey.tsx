@@ -130,8 +130,8 @@ export default function SelectKey() {
         <Flex flexDirection="column" alignItems="center" gap={3}>
           <img src={full_logo}/>
           {hasFingerprints ? (
-            <Typography variant="h5" component="h1" gutterBottom>
-              <Trans>Select Key</Trans>
+            <Typography gutterBottom>
+            <span style={ {  fontSize: 32, fontWeight:500, fontFamily:"Josefin" }}><Trans>Wallets</Trans></span>
             </Typography>
           ) : (
             <>

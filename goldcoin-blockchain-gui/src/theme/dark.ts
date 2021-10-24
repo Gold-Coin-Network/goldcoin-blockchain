@@ -7,10 +7,25 @@ export default (locale: object) =>
       ...theme,
       palette: {
         ...theme.palette,
+        background: {
+          default: '#000000',
+          paper: '#202322',
+        },
+        primary: {
+          main: '#FFD700',
+        },
+        divider: 'rgba(255, 255, 255, 0.0)',
         secondary: {
-          main: '#ffffff',
+          main: '#DADADA',
         },
         type: 'dark',
+        action: {
+          selected: '#202322',
+        },
+      },
+      typography: {
+        fontFamily:
+          "'Lato', 'Josefin', 'Arial', 'ヒラギノ角ゴ Pro W3', 'Hiragino Kaku Gothic Pro', 'メイリオ', Meiryo, 'ＭＳ Ｐゴシック', 'MS PGothic', sans-serif",
       },
     },
     locale,

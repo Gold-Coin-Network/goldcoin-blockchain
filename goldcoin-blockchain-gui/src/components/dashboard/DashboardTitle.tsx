@@ -22,7 +22,11 @@ export default function DashboardTitle(props: Props) {
 
   return (
     <DashboardTitleTeleporter.Source>
-      <Flex alignItems="center">{children}</Flex>
+      <Flex alignItems="right">
+        <Typography >
+          <span style={ { color: "#ffffff", fontSize: 35, fontWeight:500, fontFamily:"Josefin" }}>{children}</span>
+        </Typography>
+      </Flex>
     </DashboardTitleTeleporter.Source>
   );
 }

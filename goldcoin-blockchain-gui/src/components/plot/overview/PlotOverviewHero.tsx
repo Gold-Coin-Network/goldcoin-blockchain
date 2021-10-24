@@ -38,7 +38,7 @@ export default function PlotOverviewHero() {
               }
               <Link
                 target="_blank"
-                href="https://github.com/pinksheetscrypto/goldcoin-blockchain/wiki/Network-Architecture"
+                href="https://github.com/STATION-I/goldcoin-blockchain/wiki/Network-Architecture"
               >
                 Learn more
               </Link>

@@ -11,9 +11,10 @@ const StyledSideBarContainer = styled(Box)`
 
 const StyledSidebar = styled(Drawer)`
   > div {
-    left: 100px;
+    padding-top: 50px;
+    left: 200px;
     width: 180px;
-    box-shadow: inset 6px 0 8px -8px rgba(0, 0, 0, 0.2);
+    background-color: transparent;
   }
 `;
 
@@ -32,7 +33,7 @@ const StyledInnerContainer = styled(Box)`
 
 type Props = {
   children?: ReactElement<any>;
-  sidebar: ReactNode;
+  sidebar: ReactNode,
   title?: ReactNode;
 };
 
@@ -44,7 +45,10 @@ export default function LayoutSidebar(props: Props) {
       <DashboardTitle>{title}</DashboardTitle>
       <Flex flexGrow={1}>
         <StyledSideBarContainer>
-          <StyledSidebar variant="permanent" open>
+          <StyledSidebar
+            variant="permanent"
+            open
+          >
             <Toolbar />
             {sidebar}
           </StyledSidebar>

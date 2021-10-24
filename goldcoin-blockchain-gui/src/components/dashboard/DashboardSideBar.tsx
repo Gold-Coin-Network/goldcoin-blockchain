@@ -16,11 +16,15 @@ import { logOut } from '../../modules/message';
 
 const StyledRoot = styled(Flex)`
   height: 100%;
+  padding-top: 50px;
   overflow-y: auto;
 `;
 
 const StyledList = styled(List)`
   width: 100%;
+  justify-content: start;
+  display: flex;
+  flex-direction: column;
 `;
 
 export default function DashboardSideBar() {

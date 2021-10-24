@@ -358,7 +358,7 @@ if (!handleSquirrelEvent()) {
             label: i18n._(/* i18n */ { id: 'Goldcoin Blockchain Wiki' }),
             click: () => {
               openExternal(
-                'https://github.com/pinksheetscrypto/goldcoin-blockchain/wiki',
+                'https://github.com/STATION-I/goldcoin-blockchain/wiki',
               );
             },
           },
@@ -366,7 +366,7 @@ if (!handleSquirrelEvent()) {
             label: i18n._(/* i18n */ { id: 'Frequently Asked Questions' }),
             click: () => {
               openExternal(
-                'https://github.com/pinksheetscrypto/goldcoin-blockchain/wiki/FAQ',
+                'https://github.com/STATION-I/goldcoin-blockchain/wiki/FAQ',
               );
             },
           },
@@ -374,7 +374,7 @@ if (!handleSquirrelEvent()) {
             label: i18n._(/* i18n */ { id: 'Release Notes' }),
             click: () => {
               openExternal(
-                'https://github.com/pinksheetscrypto/goldcoin-blockchain/releases',
+                'https://github.com/STATION-I/goldcoin-blockchain/releases',
               );
             },
           },
@@ -382,7 +382,7 @@ if (!handleSquirrelEvent()) {
             label: i18n._(/* i18n */ { id: 'Contribute on GitHub' }),
             click: () => {
               openExternal(
-                'https://github.com/pinksheetscrypto/goldcoin-blockchain/blob/master/CONTRIBUTING.md',
+                'https://github.com/STATION-I/goldcoin-blockchain/blob/master/CONTRIBUTING.md',
               );
             },
           },
@@ -393,20 +393,29 @@ if (!handleSquirrelEvent()) {
             label: i18n._(/* i18n */ { id: 'Report an Issue...' }),
             click: () => {
               openExternal(
-                'https://github.com/pinksheetscrypto/goldcoin-blockchain/issues',
+                'https://github.com/STATION-I/goldcoin-blockchain/issues',
               );
             },
           },
           {
-            label: i18n._(/* i18n */ { id: 'Chat on KeyBase' }),
+            label: i18n._(/* i18n */ { id: 'Chat on Discord' }),
             click: () => {
-              openExternal('https://keybase.io/team/goldcoin_network.public');
+              openExternal('https://discord.gg/qpFZp5DUzM');
             },
           },
           {
-            label: i18n._(/* i18n */ { id: 'Follow on Twitter' }),
+            label: i18n._(/* i18n */ { id: 'Follow us on Twitter' }),
             click: () => {
-              openExternal('https://twitter.com/goldcoin_project');
+              openExternal('https://twitter.com/staiglobal');
+            },
+          },
+            {
+              type: 'separator',
+            },
+            {
+              label: i18n._(/* i18n */ { id: 'Download latest blockchain database' }),
+              click: () => {
+                openExternal('https://chiaforksblockchain.com/');
             },
           },
         ],

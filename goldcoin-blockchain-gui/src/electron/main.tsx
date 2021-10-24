@@ -355,10 +355,10 @@ if (!handleSquirrelEvent()) {
         role: 'help',
         submenu: [
           {
-            label: i18n._(/* i18n */ { id: 'Goldcoin Blockchain Wiki' }),
+            label: i18n._(/* i18n */ { id: 'Goldcoin Network' }),
             click: () => {
               openExternal(
-                'https://github.com/Gold-Coin-Network/goldcoin-blockchain/wiki',
+                'https://goldcoin-network.net/',
               );
             },
           },
@@ -366,7 +366,7 @@ if (!handleSquirrelEvent()) {
             label: i18n._(/* i18n */ { id: 'Frequently Asked Questions' }),
             click: () => {
               openExternal(
-                'https://github.com/Gold-Coin-Network/goldcoin-blockchain/wiki/FAQ',
+                'https://goldcoin-network.net/faq/index.html',
               );
             },
           },
@@ -400,13 +400,13 @@ if (!handleSquirrelEvent()) {
           {
             label: i18n._(/* i18n */ { id: 'Chat on Discord' }),
             click: () => {
-              openExternal('https://discord.gg/qpFZp5DUzM');
+              openExternal('https://discord.gg/v2SgWfTkyv');
             },
           },
           {
             label: i18n._(/* i18n */ { id: 'Follow us on Twitter' }),
             click: () => {
-              openExternal('https://twitter.com/staiglobal');
+              openExternal('https://twitter.com/GoldCoinNetDev');
             },
           },
             {

@@ -23,8 +23,8 @@ export default function FullNodeAddConnection(props: Props) {
   const methods = useForm<FormData>({
     shouldUnregister: false,
     defaultValues: {
-      host: 'dns-introducer.goldcoin-network.net',
-      port: '7999',
+      host: 'dns-introducer.goldcoin.com',
+      port: '1999',
     },
   });
 

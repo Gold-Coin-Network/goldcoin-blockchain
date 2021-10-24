@@ -17,7 +17,7 @@ export default function AppTimeBomb() {
     return (
       <Alert severity="warning">
         <Trans>
-          This version of goldcoin is no longer compatible with the blockchain and
+          This version of Goldcoin is no longer compatible with the blockchain and
           can not safely farm.
         </Trans>
       </Alert>

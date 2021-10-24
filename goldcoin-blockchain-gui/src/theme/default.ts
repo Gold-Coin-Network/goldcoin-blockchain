@@ -13,7 +13,10 @@ export default {
       contrastText: '#ffffff',
     },
   },
+  shape: {
+    borderRadius: 10
+  },
   drawer: {
-    width: '100px',
+    width: '200px',
   },
 };

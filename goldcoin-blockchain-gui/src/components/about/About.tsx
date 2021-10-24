@@ -20,7 +20,7 @@ const GlobalStyle = createGlobalStyle`
     color: rgb(31, 31, 31);
     background-color: rgb(238, 238, 238);
     font-size: 12px;
-    font-family: 'Helvetica', 'Arial', 'ヒラギノ角ゴ Pro W3', 'Hiragino Kaku Gothic Pro', 'メイリオ', Meiryo, 'ＭＳ Ｐゴシック', 'MS PGothic', sans-serif;
+    font-family: 'Lato', 'Josefin', 'Helvetica', 'Arial', 'ヒラギノ角ゴ Pro W3', 'Hiragino Kaku Gothic Pro', 'メイリオ', Meiryo, 'ＭＳ Ｐゴシック', 'MS PGothic', sans-serif;
   }
 `;
 
@@ -114,7 +114,7 @@ export default function About(props: Props) {
         </StyledLink>
         <StyledSubTitle>{description}</StyledSubTitle>
         <Spacer />
-        <div className="copyright">Copyright (c) 2021 Goldcoin Network</div>
+        <div className="copyright">Copyright (c) 2021 STATION-I</div>
         <Spacer />
         <VersionsTable>
           {versions?.electron && (
@@ -144,7 +144,7 @@ export default function About(props: Props) {
         </VersionsTable>
 
         <BugReport
-          href="https://github.com/Gold-Coin-Network/goldcoin-blockchain/issues"
+          href="https://github.com/STATION-I/goldcoin-blockchain/issues"
           target="_blank"
         >
           Report an issue

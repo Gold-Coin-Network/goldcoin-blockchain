@@ -10,10 +10,13 @@ const StyledListItem = styled(ListItem)`
   align-items: center;
   padding-left: 0;
   padding-right: 0;
+  min-height: 150px;
+  padding-top: 50px;
 `;
 
 const StyledListItemIcon = styled(ListItemIcon)`
   min-width: auto;
+  with: 100%;
 `;
 
 const StyledListItemText = styled(ListItemText)`

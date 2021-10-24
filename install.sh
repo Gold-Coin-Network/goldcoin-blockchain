@@ -20,7 +20,7 @@ if [ "$(uname -m)" = "armv7l" ]; then
 	echo "WARNING:"
 	echo "The goldcoin Blockchain requires a 64 bit OS and this is 32 bit armv7l"
 	echo "For more information, see"
-	echo "https://github.com/pinksheetscrypto/goldcoin-blockchain/wiki/Raspberry-Pi"
+	echo "https://github.com/Gold-Coin-Network/goldcoin-blockchain/wiki/Raspberry-Pi"
 	echo "Exiting."
 	exit 1
 fi
@@ -122,10 +122,10 @@ python -m pip install -e . --extra-index-url https://pypi.chia.net/simple/
 echo ""
 echo "goldcoin blockchain install.sh complete."
 echo "For assistance join us on Discord in the #testnet chat channel:"
-echo "https://discord.gg/TgJyxsEFFc"
+echo "https://discord.gg/v2SgWfTkyv"
 echo ""
 echo "Try the Quick Start Guide to running goldcoin-blockchain:"
-echo "https://github.com/pinksheetscrypto/goldcoin-blockchain/wiki/Quick-Start-Guide"
+echo "https://github.com/Gold-Coin-Network/goldcoin-blockchain/wiki/Quick-Start-Guide"
 echo ""
 echo "To install the GUI type 'sh install-gui.sh' after '. ./activate'."
 echo ""

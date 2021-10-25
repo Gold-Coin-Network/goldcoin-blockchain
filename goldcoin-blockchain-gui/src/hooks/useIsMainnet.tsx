@@ -10,5 +10,5 @@ export default function useIsMainnet(): boolean | undefined {
     return undefined;
   }
 
-  return networkPrefix.toLowerCase() === 'stai';
+  return networkPrefix.toLowerCase() === 'ozt';
 }

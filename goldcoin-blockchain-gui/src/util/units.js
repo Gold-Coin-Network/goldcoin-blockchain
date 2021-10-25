@@ -1,6 +1,6 @@
 const units = {
   goldcoin: 1,
-  mojo: 1 / 1e9,
+  mojo: 1 / 1e12,
   colouredcoin: 1 / 1e9,
 };
 

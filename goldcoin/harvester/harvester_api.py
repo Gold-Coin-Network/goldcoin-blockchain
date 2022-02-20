@@ -7,13 +7,13 @@ from blspy import AugSchemeMPL, G2Element, G1Element
 
 from goldcoin.consensus.pot_iterations import calculate_iterations_quality, calculate_sp_interval_iters
 from goldcoin.harvester.harvester import Harvester
-from goldcoin.plotting.plot_tools import PlotInfo, parse_plot_info
+from goldcoin.plotting.util import PlotInfo, parse_plot_info
 from goldcoin.protocols import harvester_protocol
 from goldcoin.protocols.farmer_protocol import FarmingInfo
 from goldcoin.protocols.harvester_protocol import Plot
 from goldcoin.protocols.protocol_message_types import ProtocolMessageTypes
 from goldcoin.server.outbound_message import make_msg
-from goldcoin.server.ws_connection import WSgoldcoinConnection
+from goldcoin.server.ws_connection import WSGoldcoinConnection
 from goldcoin.types.blockchain_format.proof_of_space import ProofOfSpace
 from goldcoin.types.blockchain_format.sized_bytes import bytes32
 from goldcoin.util.api_decorators import api_request, peer_required
@@ -37,19 +37,16 @@ class HarvesterAPI:
         as well as the farmer pks, which must be put into the plots, before the plotting process begins.
         We cannot use any plots which have different keys in them.
         """
-        self.harvester.farmer_public_keys = harvester_handshake.farmer_public_keys
-        self.harvester.pool_public_keys = harvester_handshake.pool_public_keys
+        self.harvester.plot_manager.set_public_keys(
+            harvester_handshake.farmer_public_keys, harvester_handshake.pool_public_keys
+        )
 
-        await self.harvester.refresh_plots()
-
-        if len(self.harvester.provers) == 0:
-            self.harvester.log.warning("Not farming any plots on this harvester. Check your configuration.")
-            return None
+        self.harvester.plot_manager.start_refreshing()
 
     @peer_required
     @api_request
     async def new_signage_point_harvester(
-        self, new_challenge: harvester_protocol.NewSignagePointHarvester, peer: WSgoldcoinConnection
+        self, new_challenge: harvester_protocol.NewSignagePointHarvester, peer: WSGoldcoinConnection
     ):
         """
         The harvester receives a new signage point from the farmer, this happens at the start of each slot.
@@ -63,17 +60,12 @@ class HarvesterAPI:
         4. Looks up the full proof of space in the plot for each quality, approximately 64 reads per quality
         5. Returns the proof of space to the farmer
         """
-        if len(self.harvester.pool_public_keys) == 0 or len(self.harvester.farmer_public_keys) == 0:
+        if not self.harvester.plot_manager.public_keys_available():
             # This means that we have not received the handshake yet
             return None
 
         start = time.time()
         assert len(new_challenge.challenge_hash) == 32
-
-        # Refresh plots to see if there are any new ones
-        if start - self.harvester.last_load_time > self.harvester.plot_load_frequency:
-            await self.harvester.refresh_plots()
-            self.harvester.last_load_time = time.time()
 
         loop = asyncio.get_running_loop()
 
@@ -135,17 +127,6 @@ class HarvesterAPI:
                                 )
                                 continue
 
-                            # Look up local_sk from plot to save locked memory
-                            (
-                                pool_public_key_or_puzzle_hash,
-                                farmer_public_key,
-                                local_master_sk,
-                            ) = parse_plot_info(plot_info.prover.get_memo())
-                            local_sk = master_sk_to_local_sk(local_master_sk)
-                            include_taproot = plot_info.pool_contract_puzzle_hash is not None
-                            plot_public_key = ProofOfSpace.generate_plot_public_key(
-                                local_sk.get_g1(), farmer_public_key, include_taproot
-                            )
                             responses.append(
                                 (
                                     quality_str,
@@ -153,7 +134,7 @@ class HarvesterAPI:
                                         sp_challenge_hash,
                                         plot_info.pool_public_key,
                                         plot_info.pool_contract_puzzle_hash,
-                                        plot_public_key,
+                                        plot_info.plot_public_key,
                                         uint8(plot_info.prover.get_size()),
                                         proof_xs,
                                     ),
@@ -189,22 +170,19 @@ class HarvesterAPI:
         awaitables = []
         passed = 0
         total = 0
-        for try_plot_filename, try_plot_info in self.harvester.provers.items():
-            try:
-                if try_plot_filename.exists():
-                    # Passes the plot filter (does not check sp filter yet though, since we have not reached sp)
-                    # This is being executed at the beginning of the slot
-                    total += 1
-                    if ProofOfSpace.passes_plot_filter(
-                        self.harvester.constants,
-                        try_plot_info.prover.get_id(),
-                        new_challenge.challenge_hash,
-                        new_challenge.sp_hash,
-                    ):
-                        passed += 1
-                        awaitables.append(lookup_challenge(try_plot_filename, try_plot_info))
-            except Exception as e:
-                self.harvester.log.error(f"Error plot file {try_plot_filename} may no longer exist {e}")
+        with self.harvester.plot_manager:
+            for try_plot_filename, try_plot_info in self.harvester.plot_manager.plots.items():
+                # Passes the plot filter (does not check sp filter yet though, since we have not reached sp)
+                # This is being executed at the beginning of the slot
+                total += 1
+                if ProofOfSpace.passes_plot_filter(
+                    self.harvester.constants,
+                    try_plot_info.prover.get_id(),
+                    new_challenge.challenge_hash,
+                    new_challenge.sp_hash,
+                ):
+                    passed += 1
+                    awaitables.append(lookup_challenge(try_plot_filename, try_plot_info))
 
         # Concurrently executes all lookups on disk, to take advantage of multiple disk parallelism
         total_proofs_found = 0
@@ -224,10 +202,6 @@ class HarvesterAPI:
                 total_proofs_found += 1
                 msg = make_msg(ProtocolMessageTypes.new_proof_of_space, response)
                 await peer.send_message(msg)
-            if sublist:
-                self.harvester.log.info(
-                    f"Found {len(sublist)} proofs in {filename} in {time_taken:.5f} s"
-                )
 
         now = uint64(int(time.time()))
         farming_info = FarmingInfo(
@@ -243,7 +217,7 @@ class HarvesterAPI:
         self.harvester.log.info(
             f"{len(awaitables)} plots were eligible for farming {new_challenge.challenge_hash.hex()[:10]}..."
             f" Found {total_proofs_found} proofs. Time: {time.time() - start:.5f} s. "
-            f"Total {len(self.harvester.provers)} plots"
+            f"Total {self.harvester.plot_manager.plot_count()} plots"
         )
 
     @api_request
@@ -254,19 +228,20 @@ class HarvesterAPI:
         be used for pooling.
         """
         plot_filename = Path(request.plot_identifier[64:]).resolve()
-        try:
-            plot_info = self.harvester.provers[plot_filename]
-        except KeyError:
-            self.harvester.log.warning(f"KeyError plot {plot_filename} does not exist.")
-            return None
+        with self.harvester.plot_manager:
+            try:
+                plot_info = self.harvester.plot_manager.plots[plot_filename]
+            except KeyError:
+                self.harvester.log.warning(f"KeyError plot {plot_filename} does not exist.")
+                return None
 
-        # Look up local_sk from plot to save locked memory
-        (
-            pool_public_key_or_puzzle_hash,
-            farmer_public_key,
-            local_master_sk,
-        ) = parse_plot_info(plot_info.prover.get_memo())
-        local_sk = master_sk_to_local_sk(local_master_sk)
+            # Look up local_sk from plot to save locked memory
+            (
+                pool_public_key_or_puzzle_hash,
+                farmer_public_key,
+                local_master_sk,
+            ) = parse_plot_info(plot_info.prover.get_memo())
+            local_sk = master_sk_to_local_sk(local_master_sk)
 
         if isinstance(pool_public_key_or_puzzle_hash, G1Element):
             include_taproot = False

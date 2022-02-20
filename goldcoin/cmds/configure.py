@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 import click
 
@@ -18,6 +18,11 @@ def configure(
     set_outbound_peer_count: str,
     set_peer_count: str,
     testnet: str,
+    peer_connect_timeout: str,
+    crawler_db_path: str,
+    crawler_minimum_version_count: Optional[int],
+    seeder_domain_name: str,
+    seeder_nameserver: str,
 ):
     config: Dict = load_config(DEFAULT_ROOT_PATH, "config.yaml")
     change_made = False
@@ -73,27 +78,29 @@ def configure(
             change_made = True
         else:
             print(f"Logging level not updated. Use one of: {levels}")
-    if enable_upnp is not None:
+    if enable_upnp:
         config["full_node"]["enable_upnp"] = str2bool(enable_upnp)
         if str2bool(enable_upnp):
             print("uPnP enabled")
         else:
             print("uPnP disabled")
         change_made = True
-    if set_outbound_peer_count is not None:
+    if set_outbound_peer_count:
         config["full_node"]["target_outbound_peer_count"] = int(set_outbound_peer_count)
         print("Target outbound peer count updated")
         change_made = True
-    if set_peer_count is not None:
+    if set_peer_count:
         config["full_node"]["target_peer_count"] = int(set_peer_count)
         print("Target peer count updated")
         change_made = True
-    if testnet is not None:
+    if testnet:
         if testnet == "true" or testnet == "t":
             print("Setting Testnet")
-            testnet_port = "7999"
-            testnet_introducer = "beta1_introducer.goldcoin-network.net"
-            testnet = "testnet7"
+            testnet_port = "57999"
+            testnet_introducer = "introducer-testnet10.goldcoin-network.net"
+            testnet_dns_introducer = "dns-introducer-testnet10.goldcoin-network.net"
+            bootstrap_peers = ["testnet10-node.goldcoin-network.net"]
+            testnet = "testnet10"
             config["full_node"]["port"] = int(testnet_port)
             config["full_node"]["introducer_peer"]["port"] = int(testnet_port)
             config["farmer"]["full_node_peer"]["port"] = int(testnet_port)
@@ -102,6 +109,8 @@ def configure(
             config["wallet"]["introducer_peer"]["port"] = int(testnet_port)
             config["introducer"]["port"] = int(testnet_port)
             config["full_node"]["introducer_peer"]["host"] = testnet_introducer
+            config["full_node"]["dns_servers"] = [testnet_dns_introducer]
+            config["wallet"]["dns_servers"] = [testnet_dns_introducer]
             config["selected_network"] = testnet
             config["harvester"]["selected_network"] = testnet
             config["pool"]["selected_network"] = testnet
@@ -111,6 +120,13 @@ def configure(
             config["ui"]["selected_network"] = testnet
             config["introducer"]["selected_network"] = testnet
             config["wallet"]["selected_network"] = testnet
+
+            if "seeder" in config:
+                config["seeder"]["port"] = int(testnet_port)
+                config["seeder"]["other_peers_port"] = int(testnet_port)
+                config["seeder"]["selected_network"] = testnet
+                config["seeder"]["bootstrap_peers"] = bootstrap_peers
+
             print("Default full node port, introducer and network setting updated")
             change_made = True
 
@@ -118,6 +134,8 @@ def configure(
             print("Setting Mainnet")
             mainnet_port = "7999"
             mainnet_introducer = "introducer.goldcoin-network.net"
+            mainnet_dns_introducer = "dns-introducer.goldcoin-network.net"
+            bootstrap_peers = ["node.goldcoin-network.net"]
             net = "mainnet"
             config["full_node"]["port"] = int(mainnet_port)
             config["full_node"]["introducer_peer"]["port"] = int(mainnet_port)
@@ -127,6 +145,7 @@ def configure(
             config["wallet"]["introducer_peer"]["port"] = int(mainnet_port)
             config["introducer"]["port"] = int(mainnet_port)
             config["full_node"]["introducer_peer"]["host"] = mainnet_introducer
+            config["full_node"]["dns_servers"] = [mainnet_dns_introducer]
             config["selected_network"] = net
             config["harvester"]["selected_network"] = net
             config["pool"]["selected_network"] = net
@@ -136,15 +155,41 @@ def configure(
             config["ui"]["selected_network"] = net
             config["introducer"]["selected_network"] = net
             config["wallet"]["selected_network"] = net
+
+            if "seeder" in config:
+                config["seeder"]["port"] = int(mainnet_port)
+                config["seeder"]["other_peers_port"] = int(mainnet_port)
+                config["seeder"]["selected_network"] = net
+                config["seeder"]["bootstrap_peers"] = bootstrap_peers
+
             print("Default full node port, introducer and network setting updated")
             change_made = True
         else:
             print("Please choose True or False")
 
+    if peer_connect_timeout:
+        config["full_node"]["peer_connect_timeout"] = int(peer_connect_timeout)
+        change_made = True
+
+    if crawler_db_path is not None and "seeder" in config:
+        config["seeder"]["crawler_db_path"] = crawler_db_path
+        change_made = True
+
+    if crawler_minimum_version_count is not None and "seeder" in config:
+        config["seeder"]["minimum_version_count"] = crawler_minimum_version_count
+        change_made = True
+
+    if seeder_domain_name is not None and "seeder" in config:
+        config["seeder"]["domain_name"] = seeder_domain_name
+        change_made = True
+
+    if seeder_nameserver is not None and "seeder" in config:
+        config["seeder"]["nameserver"] = seeder_nameserver
+        change_made = True
+
     if change_made:
         print("Restart any running goldcoin services for changes to take effect")
         save_config(root_path, "config.yaml", config)
-    return 0
 
 
 @click.command("configure", short_help="Modify configuration")
@@ -186,6 +231,27 @@ def configure(
     type=str,
 )
 @click.option("--set-peer-count", help="Update the target peer count (default 80)", type=str)
+@click.option("--set-peer-connect-timeout", help="Update the peer connect timeout (default 30)", type=str)
+@click.option(
+    "--crawler-db-path",
+    help="configures the path to the crawler database",
+    type=str,
+)
+@click.option(
+    "--crawler-minimum-version-count",
+    help="configures how many of a particular version must be seen to be reported in logs",
+    type=int,
+)
+@click.option(
+    "--seeder-domain-name",
+    help="configures the seeder domain_name setting. Ex: `seeder.example.com.`",
+    type=str,
+)
+@click.option(
+    "--seeder-nameserver",
+    help="configures the seeder nameserver setting. Ex: `example.com.`",
+    type=str,
+)
 @click.pass_context
 def configure_cmd(
     ctx,
@@ -198,6 +264,11 @@ def configure_cmd(
     set_outbound_peer_count,
     set_peer_count,
     testnet,
+    set_peer_connect_timeout,
+    crawler_db_path,
+    crawler_minimum_version_count,
+    seeder_domain_name,
+    seeder_nameserver,
 ):
     configure(
         ctx.obj["root_path"],
@@ -210,4 +281,9 @@ def configure_cmd(
         set_outbound_peer_count,
         set_peer_count,
         testnet,
+        set_peer_connect_timeout,
+        crawler_db_path,
+        crawler_minimum_version_count,
+        seeder_domain_name,
+        seeder_nameserver,
     )

@@ -3,7 +3,7 @@ from typing import List
 
 from goldcoin.types.blockchain_format.coin import Coin
 from goldcoin.types.blockchain_format.program import SerializedProgram, INFINITE_COST
-from goldcoin.util.chain_utils import additions_for_solution
+from goldcoin.util.chain_utils import additions_for_solution, fee_for_solution
 from goldcoin.util.streamable import Streamable, streamable
 
 
@@ -20,5 +20,12 @@ class CoinSpend(Streamable):
     puzzle_reveal: SerializedProgram
     solution: SerializedProgram
 
+    # TODO: this function should be moved out of the full node. It cannot be
+    # called on untrusted input
     def additions(self) -> List[Coin]:
         return additions_for_solution(self.coin.name(), self.puzzle_reveal, self.solution, INFINITE_COST)
+
+    # TODO: this function should be moved out of the full node. It cannot be
+    # called on untrusted input
+    def reserved_fee(self) -> int:
+        return fee_for_solution(self.puzzle_reveal, self.solution, INFINITE_COST)

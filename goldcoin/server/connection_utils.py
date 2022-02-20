@@ -2,15 +2,15 @@ import asyncio
 import random
 from typing import Any, List, Optional, Tuple
 
-from goldcoin.server.ws_connection import WSgoldcoinConnection
+from goldcoin.server.ws_connection import WSGoldcoinConnection
 
 
 async def send_all_first_reply(
-    func: str, arg: Any, peers: List[WSgoldcoinConnection], timeout=15
-) -> Optional[Tuple[Any, WSgoldcoinConnection]]:
+    func: str, arg: Any, peers: List[WSGoldcoinConnection], timeout=15
+) -> Optional[Tuple[Any, WSGoldcoinConnection]]:
     """performs an API request to peers and returns the result of the first response and the peer that sent it."""
 
-    async def do_func(peer_x: WSgoldcoinConnection, func_x: str, arg_x: Any):
+    async def do_func(peer_x: WSGoldcoinConnection, func_x: str, arg_x: Any):
         method_to_call = getattr(peer_x, func_x)
         result_x = await method_to_call(arg_x)
         if result_x is not None:
@@ -37,10 +37,10 @@ async def send_all_first_reply(
         return None
 
 
-async def send_to_random(func: str, arg: Any, peers: List[WSgoldcoinConnection]) -> Optional[Tuple[Any, WSgoldcoinConnection]]:
+async def send_to_random(func: str, arg: Any, peers: List[WSGoldcoinConnection]) -> Optional[Tuple[Any, WSGoldcoinConnection]]:
     """performs an API request to peers and returns the result of the first response and the peer that sent it."""
 
-    async def do_func(peer_x: WSgoldcoinConnection, func_x: str, arg_x: Any):
+    async def do_func(peer_x: WSGoldcoinConnection, func_x: str, arg_x: Any):
         method_to_call = getattr(peer_x, func_x)
         result_x = await method_to_call(arg_x)
         if result_x is not None:

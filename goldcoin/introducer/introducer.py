@@ -3,7 +3,7 @@ import logging
 import time
 from typing import Optional
 
-from goldcoin.server.server import goldcoinServer
+from goldcoin.server.server import GoldcoinServer
 from goldcoin.server.introducer_peers import VettedPeer
 from goldcoin.util.ints import uint64
 
@@ -13,7 +13,7 @@ class Introducer:
         self.max_peers_to_send = max_peers_to_send
         self.recent_peer_threshold = recent_peer_threshold
         self._shut_down = False
-        self.server: Optional[goldcoinServer] = None
+        self.server: Optional[GoldcoinServer] = None
         self.log = logging.getLogger(__name__)
 
     async def _start(self):
@@ -27,7 +27,7 @@ class Introducer:
         pass
         # await self._vetting_task
 
-    def set_server(self, server: goldcoinServer):
+    def set_server(self, server: GoldcoinServer):
         self.server = server
 
     async def _vetting_loop(self):

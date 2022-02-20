@@ -9,8 +9,8 @@ from cryptography.hazmat.primitives import hashes, serialization
 
 from goldcoin.protocols.shared_protocol import protocol_version
 from goldcoin.server.outbound_message import NodeType
-from goldcoin.server.server import goldcoinServer, ssl_context_for_client
-from goldcoin.server.ws_connection import WSgoldcoinConnection
+from goldcoin.server.server import GoldcoinServer, ssl_context_for_client
+from goldcoin.server.ws_connection import WSGoldcoinConnection
 from goldcoin.ssl.create_ssl import generate_ca_signed_cert
 from goldcoin.types.blockchain_format.sized_bytes import bytes32
 from goldcoin.types.peer_info import PeerInfo
@@ -21,14 +21,16 @@ from tests.time_out_assert import time_out_assert
 log = logging.getLogger(__name__)
 
 
-async def disconnect_all_and_reconnect(server: goldcoinServer, reconnect_to: goldcoinServer) -> bool:
+async def disconnect_all_and_reconnect(server: GoldcoinServer, reconnect_to: GoldcoinServer) -> bool:
     cons = list(server.all_connections.values())[:]
     for con in cons:
         await con.close()
     return await server.start_client(PeerInfo(self_hostname, uint16(reconnect_to._port)), None)
 
 
-async def add_dummy_connection(server: goldcoinServer, dummy_port: int) -> Tuple[asyncio.Queue, bytes32]:
+async def add_dummy_connection(
+    server: GoldcoinServer, dummy_port: int, type: NodeType = NodeType.FULL_NODE
+) -> Tuple[asyncio.Queue, bytes32]:
     timeout = aiohttp.ClientTimeout(total=10)
     session = aiohttp.ClientSession(timeout=timeout)
     incoming_queue: asyncio.Queue = asyncio.Queue()
@@ -45,8 +47,8 @@ async def add_dummy_connection(server: goldcoinServer, dummy_port: int) -> Tuple
     peer_id = bytes32(der_cert.fingerprint(hashes.SHA256()))
     url = f"wss://{self_hostname}:{server._port}/ws"
     ws = await session.ws_connect(url, autoclose=True, autoping=True, ssl=ssl_context)
-    wsc = WSgoldcoinConnection(
-        NodeType.FULL_NODE,
+    wsc = WSGoldcoinConnection(
+        type,
         ws,
         server._port,
         log,
@@ -64,7 +66,7 @@ async def add_dummy_connection(server: goldcoinServer, dummy_port: int) -> Tuple
     return incoming_queue, peer_id
 
 
-async def connect_and_get_peer(server_1: goldcoinServer, server_2: goldcoinServer) -> WSgoldcoinConnection:
+async def connect_and_get_peer(server_1: GoldcoinServer, server_2: GoldcoinServer) -> WSGoldcoinConnection:
     """
     Connect server_2 to server_1, and get return the connection in server_1.
     """

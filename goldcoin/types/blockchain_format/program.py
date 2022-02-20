@@ -1,17 +1,19 @@
 import io
-from typing import List, Set, Tuple
+from typing import List, Set, Tuple, Optional, Any
 
-from clvm import KEYWORD_FROM_ATOM, KEYWORD_TO_ATOM, SExp
+from clvm import SExp
 from clvm import run_program as default_run_program
 from clvm.casts import int_from_bytes
 from clvm.EvalError import EvalError
-from clvm.operators import OP_REWRITE, OPERATOR_LOOKUP
+from clvm.operators import OPERATOR_LOOKUP
 from clvm.serialize import sexp_from_stream, sexp_to_stream
-from clvm_rs import STRICT_MODE, deserialize_and_run_program2, serialized_length
+from clvm_rs import MEMPOOL_MODE, run_chia_program, serialized_length, run_generator2
 from clvm_tools.curry import curry, uncurry
 
 from goldcoin.types.blockchain_format.sized_bytes import bytes32
 from goldcoin.util.hash import std_hash
+from goldcoin.util.ints import uint16
+from goldcoin.util.byte_types import hexstr_to_bytes
 
 from .tree_hash import sha256_treehash
 
@@ -50,22 +52,49 @@ class Program(SExp):
     @classmethod
     def from_bytes(cls, blob: bytes) -> "Program":
         f = io.BytesIO(blob)
-        result = cls.parse(f)  # type: ignore # noqa
+        result = cls.parse(f)  # noqa
         assert f.read() == b""
         return result
+
+    @classmethod
+    def fromhex(cls, hexstr: str) -> "Program":
+        return cls.from_bytes(hexstr_to_bytes(hexstr))
 
     def to_serialized_program(self) -> "SerializedProgram":
         return SerializedProgram.from_bytes(bytes(self))
 
+    @classmethod
+    def from_serialized_program(cls, sp: "SerializedProgram") -> "Program":
+        return cls.from_bytes(bytes(sp))
+
     def __bytes__(self) -> bytes:
         f = io.BytesIO()
-        self.stream(f)  # type: ignore # noqa
+        self.stream(f)  # noqa
         return f.getvalue()
 
     def __str__(self) -> str:
         return bytes(self).hex()
 
-    def get_tree_hash(self, *args: List[bytes32]) -> bytes32:
+    def at(self, position: str) -> "Program":
+        """
+        Take a string of only `f` and `r` characters and follow the corresponding path.
+
+        Example:
+
+        `assert Program.to(17) == Program.to([10, 20, 30, [15, 17], 40, 50]).at("rrrfrf")`
+
+        """
+        v = self
+        for c in position.lower():
+            if c == "f":
+                v = v.first()
+            elif c == "r":
+                v = v.rest()
+            else:
+                raise ValueError(f"`at` got illegal character `{c}`. Only `f` & `r` allowed")
+        return v
+
+    def get_tree_hash(self, *args: bytes32) -> bytes32:
         """
         Any values in `args` that appear in the tree
         are presumed to have been hashed already.
@@ -167,6 +196,10 @@ class SerializedProgram:
         return ret
 
     @classmethod
+    def fromhex(cls, hexstr: str) -> "SerializedProgram":
+        return cls.from_bytes(hexstr_to_bytes(hexstr))
+
+    @classmethod
     def from_program(cls, p: Program) -> "SerializedProgram":
         ret = SerializedProgram()
         ret._buf = bytes(p)
@@ -197,7 +230,7 @@ class SerializedProgram:
             return True
         return self._buf != other._buf
 
-    def get_tree_hash(self, *args: List[bytes32]) -> bytes32:
+    def get_tree_hash(self, *args: bytes32) -> bytes32:
         """
         Any values in `args` that appear in the tree
         are presumed to have been hashed already.
@@ -205,11 +238,31 @@ class SerializedProgram:
         tmp = sexp_from_stream(io.BytesIO(self._buf), SExp.to)
         return _tree_hash(tmp, set(args))
 
-    def run_safe_with_cost(self, max_cost: int, *args) -> Tuple[int, Program]:
-        return self._run(max_cost, STRICT_MODE, *args)
+    def run_mempool_with_cost(self, max_cost: int, *args) -> Tuple[int, Program]:
+        return self._run(max_cost, MEMPOOL_MODE, *args)
 
     def run_with_cost(self, max_cost: int, *args) -> Tuple[int, Program]:
         return self._run(max_cost, 0, *args)
+
+    # returns an optional error code and an optional PySpendBundleConditions (from clvm_rs)
+    # exactly one of those will hold a value
+    def run_as_generator(self, max_cost: int, flags: int, *args) -> Tuple[Optional[uint16], Optional[Any]]:
+        serialized_args = b""
+        if len(args) > 1:
+            # when we have more than one argument, serialize them into a list
+            for a in args:
+                serialized_args += b"\xff"
+                serialized_args += _serialize(a)
+            serialized_args += b"\x80"
+        else:
+            serialized_args += _serialize(args[0])
+
+        return run_generator2(
+            self._buf,
+            serialized_args,
+            max_cost,
+            flags,
+        )
 
     def _run(self, max_cost: int, flags, *args) -> Tuple[int, Program]:
         # when multiple arguments are passed, concatenate them into a serialized
@@ -226,16 +279,9 @@ class SerializedProgram:
         else:
             serialized_args += _serialize(args[0])
 
-        # TODO: move this ugly magic into `clvm` "dialects"
-        native_opcode_names_by_opcode = dict(
-            ("op_%s" % OP_REWRITE.get(k, k), op) for op, k in KEYWORD_FROM_ATOM.items() if k not in "qa."
-        )
-        cost, ret = deserialize_and_run_program2(
+        cost, ret = run_chia_program(
             self._buf,
             serialized_args,
-            KEYWORD_TO_ATOM["q"][0],
-            KEYWORD_TO_ATOM["a"][0],
-            native_opcode_names_by_opcode,
             max_cost,
             flags,
         )

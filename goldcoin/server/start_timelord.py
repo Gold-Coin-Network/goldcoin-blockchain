@@ -4,6 +4,7 @@ from typing import Dict
 
 from goldcoin.consensus.constants import ConsensusConstants
 from goldcoin.consensus.default_constants import DEFAULT_CONSTANTS
+from goldcoin.rpc.timelord_rpc_api import TimelordRpcApi
 from goldcoin.server.outbound_message import NodeType
 from goldcoin.server.start_service import run_service
 from goldcoin.timelord.timelord import Timelord
@@ -46,6 +47,10 @@ def service_kwargs_for_timelord(
         auth_connect_peers=False,
         network_id=network_id,
     )
+
+    if config.get("start_rpc_server", True):
+        kwargs["rpc_info"] = (TimelordRpcApi, config.get("rpc_port", 7758))
+
     return kwargs
 
 

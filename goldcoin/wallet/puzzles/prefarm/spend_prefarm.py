@@ -29,7 +29,7 @@ def print_conditions(spend_bundle: SpendBundle):
 
 
 async def main() -> None:
-    rpc_port: uint16 = uint16(8555)
+    rpc_port: uint16 = uint16(7758)
     self_hostname = "localhost"
     path = DEFAULT_ROOT_PATH
     config = load_config(path, "config.yaml")
@@ -43,8 +43,8 @@ async def main() -> None:
         print(farmer_prefarm.amount, farmer_amounts)
         assert farmer_amounts == farmer_prefarm.amount // 2
         assert pool_amounts == pool_prefarm.amount // 2
-        address1 = "ozt135ztetmkx6wjw0zv305mg03efwx09575jl7fufy8cqsq52v2s9zq3yc0jf"  # Key 1
-        address2 = "ozt135ztetmkx6wjw0zv305mg03efwx09575jl7fufy8cqsq52v2s9zq3yc0jf"  # Key 2
+        address1 = "ozt1rdatypul5c642jkeh4yp933zu3hw8vv8tfup8ta6zfampnyhjnusxdgns6"  # Key 1
+        address2 = "ozt1duvy5ur5eyj7lp5geetfg84cj2d7xgpxt7pya3lr2y6ke3696w9qvda66e"  # Key 2
 
         ph1 = decode_puzzle_hash(address1)
         ph2 = decode_puzzle_hash(address2)
@@ -58,8 +58,8 @@ async def main() -> None:
 
         print(f"Ph1: {ph1.hex()}")
         print(f"Ph2: {ph2.hex()}")
-        assert ph1.hex() == "8d04bcaf76369d273c4c8be9b43e394b8cf2d3d497fc9e2487c0200a298a8144"
-        assert ph2.hex() == "8d04bcaf76369d273c4c8be9b43e394b8cf2d3d497fc9e2487c0200a298a8144"
+        assert ph1.hex() == "1b7ab2079fa635554ad9bd4812c622e46ee3b1875a7813afba127bb0cc9794f9"
+        assert ph2.hex() == "6f184a7074c925ef8688ce56941eb8929be320265f824ec7e351356cc745d38a"
 
         p_solution = Program.to(binutils.assemble("()"))
 

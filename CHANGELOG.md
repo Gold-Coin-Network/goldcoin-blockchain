@@ -6,12 +6,352 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project does not yet adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 for setuptools_scm/PEP 440 reasons.
 
-## 1.2.0 goldcoin blockchain 2021-07-07
+## 1.3.0 Beta Goldcoin blockchain 2021-2-10
+
+We at Goldcoin have been working hard to bring all of our new features together into one easy-to-use release. Today, we’re proud to announce the beta release of our 1.3 client. Because this release is still in beta, we recommend that you only install it on non mission-critical systems. If you are running a large farm, you should wait for the full 1.3 release before upgrading. When will the full version of 1.3 be released? Soon.
+
+### Added:
+
+- CAT wallet support - add wallets for your favorite CATs
+- Offers - make, take, and share your offers
+- Integrated light wallet sync - to get you synced up faster while your full node syncs
+- Wallet mode - Access just the wallet features to make and receive transactions
+- Farmer mode - All your farming tools, and full node, while getting all the benefits of the upgraded wallet features
+- New v2 DB - improved compression for smaller footprint
+- Key derivation tool via CLI - lets you derive wallet addresses, child keys, and also search your keys for arbitrary wallet addresses/keys
+- Light wallet data migration - CAT wallets you set up and your offer history will be carried over
+- The farmer will report version info in User-Agent field for pool protocol (Thanks @FazendaPool)
+- Added new RPC, get_version, to the daemon to return the version of Goldcoin (Thanks @dkackman)
+- Added new config.yaml setting, reserved_cores, to specify how many cores Goldcoin will not use when launching process pools. Using 0 will allow Goldcoin to use all cores for process pools. Set the default to 0 to allow Goldcoin to use all cores. This can result in faster syncing and better performance overall especially on lower-end CPUs like the Raspberry Pi4.
+- Added new RPC, get_logged_in_fingerprint, to the wallet to return the currently logged in fingerprint.
+- Added new CLI option, goldcoin keys derive, to allow deriving any number of keys in various ways. This is particularly useful to do an exhaustive search for a given address using goldcoin keys derive search.
+- Div soft fork block height set to 2,300,000
+
+### Changed:
+
+- Light wallet client sync updated to only require 3 peers instead of 5
+- Only CATs from the default CAT list will be automatically added, all other unknown CATs will need to be manually added
+- New sorting pattern for offer history - Open/pending offers sorted on top ordered by creation date > confirmation block height > trade id, and then Confirmed and Cancelled offers sorted by the same order
+- When plotting multiple plots with the GUI, new items are taken from the top of the list instead of the bottom
+- CA certificate store update
+- VDF, goldcoinpos, and blspy workflows updated to support python 3.10 wheels
+- We now store peers and peer information in a serialized format instead of sqlite. The new files are called peers.dat and wallet_peers.dat. New settings peers_file_path and wallet_peers_file_path added to config.yaml.
+- CLI option goldcoin show will display the currently selected network (mainnet or testnet)
+- CLI option goldcoin plots check will display the Pool Contract Address for Portable (PlotNFT) plots
+- Thanks to @cross for adding the ability to resolve IPv6 from hostnames in config.yaml. Added new config option prefer_ipv6 to toggle whether to resolve to IPv6 or IPv4. Default is false (IPv4)
+- The default timeout when syncing the node was increased from 10 seconds to 30 seconds to avoid timing out when syncing from slower peers.
+- TLS 1.2 is now the minimum required for all communication including peer-to-peer. The TLS 1.2 allowed cipher list is set to: "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256"
+- In a future release the minimum TLS version will be set to TLS 1.3. A warning in the log will be emitted if the version of openssl in use does not support TLS 1.3. If supported, all local connections will be restricted to TLS 1.3.
+- The new testnet is testnet10
+- Switch to using npm ci from npm install in the GUI install scripts
+- Improved sync performance of the full node by doing BLS validation in separate processes.
+- Default log rotation was changed to 50MiB from 20MiB - added config.yaml setting log_maxbytesrotation to configure this.
+- Thanks to @cross for an optimization to goldcoinpos to use rename instead of copy if the tmp2 and final files are on the same filesystem.
+- Updated to use goldcoinpos 1.0.9
+- Updated to use blspy 1.0.8
+- Implemented a limit to the number of PlotNFTs a user can create - with the limit set to 20. This is to prevent users from incorrectly creating multiple PlotNFTs. This limit can be overridden for those users who have specific use cases that require more than 20 PlotNFTs
+
+### Fixed:
+
+- Offer history limit has been fixed to show all offers now instead of limiting to just 49 offers
+- Fixed issues with using madmax CLI options -w, -G, -2, -t and -d (Issue 9163) (thanks @randomisresistance and @lasers8oclockday1)
+- Fixed issues with CLI option –passhrase-file (Issue 9032) (thanks @moonlitbugs)
+- Fixed issues with displaying IPv6 address in CLI with goldcoin show -c
+- Thanks to @chuwt for fix to looping logic during node synching
+- Fixed the goldcoin-blockchain RPM to set the permission of chrome-sandbox properly
+- Fixed issues where the wallet code would not generate enough addresses when looking for coins, which can result in missed coins due to the address not being checked. Deprecated the config setting initial_num_public_keys_new_wallet. The config setting initial_num_public_keys is now used in all cases.
+- Thanks to @risner for fixes related to using colorlog
+- Fixed issues in reading the pool_list from config if set to null
+- Fixed display info in CLI goldcoin show -c when No Info should be displayed
+- Thanks to @madMAx42v3r for fixes in goldcoinpos related to a possible race condition when multiple threads call Verifier::ValidateProof
+- Thanks to @PastaPastaPasta for some compiler warning fixes in bls-signatures
+- Thanks to @random-zebra for fixing a bug in the bls-signature copy assignment operator
+- Thanks to @lourkeur for fixes in blspy related to pybind11 2.8+
+- Thanks to @nioos-ledger with a fix to the python implementation of bls-signatures
+
+### Known Issues:
+
+- When you are adding plots and you choose the option to “create a Plot NFT”, you will get an error message “Initial_target_state” and the plots will not get created
+  - Workaround: Create the Plot NFT first in the “Pool” tab, and then add your plots and choose the created plot NFT in the drop down.
+- If you are installing on a machine for the first time, when the GUI loads and you don’t have any pre-existing wallet keys, the GUI will flicker and not load anything.
+  - Workaround: close and relaunch the GUI
+- When you close the Goldcoin app, regardless if you are in farmer mode or wallet, the content on the exit dialog isn’t correct
+- If you start with wallet mode and then switch to farmer mode and back to wallet mode, the full node will continue to sync in the background. To get the full node to stop syncing after switching to wallet mode, you will need to close the Goldcoin and relaunch the Goldcoin app.
+- Wallets with large number of transactions or large number of coins will take longer to sync (more than a few minutes), but should take less time than a full node sync. It could fail in some cases.
+
+## 1.2.11 Goldcoin blockchain 2021-11-4
+
+Farmers rejoice: today's release integrates two plotters in broad use in the Goldcoin community: Bladebit, created by @harold-b, and Madmax, created by @madMAx43v3r. Both of these plotters bring significant improvements in plotting time. More plotting info [here](https://github.com/Goldcoin-Network/goldcoin-blockchain/wiki/Alternative--Plotters).
+This release also includes several important performance improvements as a result of last weekends "Dust Storm", with two goals in mind: make sure everyone can farm at all times, and improve how many transactions per second each node can accept, especially for low-end hardware. Please know that these optimizations are only the first wave in a series of many over the next few releases to help address this going forward. While the changes we have implemented in this update may not necessarily solve for _every_ possible congestion scenario, they should go a long way towards helping low-end systems perform closer to expectations if this happens again.
+
+### Added
+
+- Performance improvements for nodes to support higher transaction volumes, especially for low powered devices like RaspBerry Pi. Full details at [#9050](https://github.com/Goldcoin-Network/goldcoin-blockchain/pull/9050).
+  - Improved multi-core usage through process pools.
+  - Prioritized block validation.
+  - Added transaction queues for more efficient handling of incoming transactions.
+  - Increased BLS pairing cache.
+- Integrated the Bladebit plotter to CLI and GUI. Thanks @harold-b for all your hard work on this, and welcome again to the Goldcoin Network team!
+- Added the Madmax plotter to CLI and GUI. Thanks @madMAx43v3r for your support!
+- Added option to configure your node to testnet using to `goldcoin init --testnet`.
+
+### Changed
+
+- Improved the wallet GUI's startup loading time by loading the default private key's fingerprint.
+- Upgraded from clvm_rs 0.1.14 to 0.1.15.
+
+### Fixed
+
+- Minor verbiage and syntax changes in CLI and GUI.
+- Partial version to fix launcher name definition.
+- Fix harvester plot loading perfomance issues.
+- Fixed a packaging failure when passphrase is being used. Thanks @ForkFarmer for reporting this defect.
+- Fixed launcher name definition, which resolved an issue for some users in which wallet-node couldn't sync.
+- Fixed a bug in the GUI that prevented some users from switching their plotNFT.
+
+### Known Issues
+
+- PlotNFT transactions via CLI (e.g. `goldcoin plotnft join`) now accept a fee parameter, but it is not yet operable.
+
+## 1.2.10 Goldcoin blockchain 2021-10-25
+
+We have some great improvements in this release: We launched our migration of keys to a common encrypted keyring.yaml file, and we secure this with an optional passphrase in both GUI and CLI. We've added a passphrase hint in case you forget your passphrase. More info on our [wiki](https://github.com/Goldcoin-Network/goldcoin-blockchain/wiki/Passphrase-Protected-Goldcoin-Keys-and-Key-Storage-Migration). We also launched a new Goldcoinlisp compiler in clvm_tools_rs which substantially improves compile time for Goldcoinlisp developers. We also addressed a widely reported issue in which a system failure, such as a power outage, would require some farmers to sync their full node from zero. This release also includes several other improvements and fixes.
+
+### Added
+
+- Added support for keyring migration from keychain, and the addition of passphrase support. Learn more at our [wiki](https://github.com/Goldcoin-Network/goldcoin-blockchain/wiki/Passphrase-Protected-Goldcoin-Keys-and-Key-Storage-Migration).
+- Enabled experimental use of a new Goldcoinlisp compiler in clvm_tools_rs in goldcoin-blockchain, which is off by default, and substantially improves compile time.
+- Added Windows PowerShell scripts to support installation from source.
+- Added a test to check that we don't reorg subslots unless there is a new peak.
+- Added harvester info to farmer logging.
+- Add 'points found 24h' to CLI reporting.
+- Added an alternative to pkm_pairs_for_conditions_dict() which is a bit more straightforward and returns the public keys and messages in the forms we need them to validate them.
+- Added ability to see unopenable plots at the end of plots check.
+- Added Program.at utility function.
+
+### Changed
+
+- Truncate points_[found,acknowledged]_24h to 24 hours at each signage point.
+- Improved reliability of test_farmer_harvester_rpc.py, by increasing the interval between harvester checks, which should avoid spamming logs with excessive plot refreshing and cache updates.
+- Thanks @cross for change that allows using IPv6 address in config.yaml for remote harvesters and other goldcoin services.
+- Change to stop creating unused indexes in block_records and full_blocks tables.
+- Removed unnecessary index in CoinStore & add additional benchmarks.
+- Changed db_sync setting to default to FULL. In a prior release, this setting caused some users to have to resync their full node from zero if the node went offline, such as in a power outage. Users can change this to OFF in config.yaml.
+- Updated the coin_store benchmark to enable synchronous mode when talking to the DB, since that's the default now, and improves the output a bit.
+- Updated the old comment on goldcoin/util/streamable.py with newer developer documentation.
+- Minor GUI changes based on community feedback.
+- Thanks @jack60612 for your help in improving our GUI code, including upgrading to electron 13, migration to electron remote, updating the latest dependencies, and more.
+
+### Fixed
+
+- Corrected a super-linter name typo to GitHub
+- Thanks @sharjeelaziz for correcting our typo in your name. Our apologies for the error!
+- In macOS builds, changed the export value of NOTARIZE to fix some build failures.
+- Fix log output for duplicated plots.
+- Removed a flaky mtime check for plots that resolved an issue where file_path.stat() shows multiple copies of plots and slows performance of the farmer. Thanks @timporter for the assist on this one.
+- Thanks @jcteng for fixing a bug on the Goldcoin DID wallet that showed 'mojo:'' instead of 'mojo'.
+
+## 1.2.9 Goldcoin blockchain 2021-10-01
+
+### Changed
+
+- Changed "About" section in client to indicate correct release version.
+
+## 1.2.8 Goldcoin blockchain 2021-09-30
+
+### Added
+
+- Added RPC updates to support keyring migration and to support adding a passphrase for wallets in an upcoming release.
+- Added plot memo caching in PlotManager, speeding initial loading and cached loading, by enabling harvester to save the parsed plot memo on disk on shutdown, then load it back into memory on startup so that it can skip key parsing calculations for all already known plots.
+- Added a debug option to log all SQL commands.
+- Added support for DID, our decentralized identity solution, as a building block toward Goldcoin's broader set of DID capabilities.
+- Thanks @olivernyc for the addition of a query in CoinStore to special case height 0 to avoid querying all unspent coins.
+- Starting logging the timing of applying additions and removals to the coin store.
+- Made max message size configurable in config.yaml, as a possible workaround for very large farms where reporting plot information exceeds the maximum message size.
+- Added a config option for peer_connect_timeout.
+- Added support for unhardened key derivations.
+- Various CoinStore benchmark and performance improvements.
+- Beta builds are built on every merge to main, and are now available from <https://goldcoin-network.net/download/>.
+- Thanks @Radexito for adding support for Raspberry Pi 4 64Bit to the GUI installation script.
+- Added macOS keyring.yaml support, migrating keys from macOS Keychain to keyring.yaml to support an upcoming release in which we'll add an optional passphrase to wallets.
+- We have made many full node changes to support our upcoming Goldcoin Asset Token (CAT) standard and our upcoming standalone light wallet, which will use Goldcoin's new electrum-style protocol to enable faster wallet syncing.
+- We have many new translations added in this release. Thanks to the following community members for their contributions: Albanian @ATSHOOTER; Arabic @younes.huawei.test; Belarusian @LUXDAD; Catalan @Poliwhirl; Chinese Traditional @MongWu-NeiTherHwoGer-Long, @danielrangel6; Chinese, Simplified @SupperDog; Croatian @vjukopila5 @marko.anti12; Czech @HansCZ; Danish @loppefaaret; Dutch @netlob;English @sharjeelaziz @darkflare; English, Australia @nzjake; English, New Zealand @nzjake @sharjeelaziz; Finnish @f00b4r; French @burnt; Hungarian @SirGeoff; Hebrew @Arielzikri; Indonesian @lespau;Lithuanian @Mariusxz; Polish @bartlomiej.tokarzewski; Portuguese @darkflare; Portuguese, Brazilian @fsavaget; Sinhala @HelaBasa;Slovak @atomsymbol; Spanish @needNRG; Spanish, Argentina @juands1644 @gdestribats; Spanish, Mexico @danielrangel6; Swedish @MrDyngrak; Thai @3bb.pintakam.7m1 @taweesak0803650558 @taweesak.25may1993 @3bb.pintakam.7m1; Turkish @baturman @ExtremeSTRAUSSER.
+
+### Changed
+
+- Bluebox proofs are now randomized instead of looking at the oldest part of the blockchain first to find uncompacted proofs.
+- Bumped sortedcontainers to version 2.4.0.
+- Dropped some redundant code in plotting/manager.py
+- Updated some hooks: Update `flake8` to 3.9.2, `pre-commit-hooks` to 4.0.1, `black` to 21.8b0
+- Bump clvm_rs to 0.1.14.
+- Added tests for invalid list terminators in conditions.
+- Updated blspy to 1.0.6.
+- Made a change to allow the host to be configurable for the timelord launcher.
+- Thanks @dkackman for adding the ability to collect the IDs of plots as they are queued and return them with the response.
+- Made the SpendBundle.debug use the default genesis challenge by default.
+- Changes in full node to execute sqlite pragmas only once, at the level where the database is opened, and changed pragma synchronous=FULL to OFF to improve disk I/O performance. Also removed redundant database pragmas in wallet.
+- Made a change to remove CoinStore's dependency on FullBlock to just pass in the parts of the block necessary to add the block.
+- Improved log formatting.
+- A change to logging to only log warnings when more than 10 seconds has passed, to reduce the number of warning logs.
+- Improved and fixed some outdated messages in CLI. Thanks @jack60612 for the assist!
+- We previously added a Rust condition checker, to replace our existing Python-based condition checker. In this release, we're removing the old Python code.
+- Several clvm_rs updates to support our upcoming Goldcoin Asset Token (CAT) standard.
+
+### Fixed
+
+- Thanks @mgraczyk for the fix to keyring_path.
+- Fixed an issue blocking the Ubuntu installer that required manual installation of Python 3.9 as a workaround.
+- Fixed an issue where the config.yaml and keyring.yaml are only partially written out to, if another process is attempting to read the config while it's being written.
+- Fixed rmtree call in create_pool_plot.
+- Thanks @Knight1 for fixing an issue in which fix-ssl-permissions shows the current 'mode' not the 'updated mode'.
+- Fixed Mypy issues on Python 3.9.7 that generated many errors when running mypy.
+- Thanks @olivernyc for fixing an edge case with negative inputs to 'truncate_to_significant_bits'.
+- Added a fix for Windows installs that were seeing exceptions when writing to the keyring.
+
+## 1.2.7 Goldcoin blockchain 2021-09-16
+
+### Fixed
+
+- Thanks to @jack60612 for fixing a bug that displayed 25 words instead of 24 words in some instances in the GUI.
+
+## 1.2.6 Goldcoin blockchain 2021-09-09
+
+Today we’re releasing version 1.2.6 to address a resource bug with nodes, and we want to stress the importance of updating to it at the earliest convenience. The fix prevents a node from consuming excessive memory when many Bluebox Timelords are active on the chain.
+
+### Changed
+
+- Updated to BLS 1.0.6.
+- Updates to the Rust conditions parser.
+- Adjusted plot refresh parameter to improve plot loading times.
+
+### Fixed
+
+- Fixed memory utilization issue related to how the node handles compact VDFs generated from blueboxes. We recommend everyone update to this version to avoid memory issues that can impact farming and harvesting.
+- Fixed issues with reloading plot files detected as bad (this can happen during plot copying).
+
+## 1.2.5 Goldcoin blockchain 2021-08-27
+
+### Fixed
+
+- Fixed errors in the Linux GUI install script, which impacted only Linux users.
+
+## 1.2.4 Goldcoin blockchain 2021-08-26
+
+### Added
+
+- Enable the rust condition checker unconditionally in testnet.
+- Added support for multiple wallets.
+- Added a change to config.yaml to tolerate fields that replace network constants in config.yaml that don't exist, but print warning.
+- Improvements to sync full nodes faster by improving the concurrency for downloading and validating blocks.
+- Added new call for logging peer_host: get_peer_logging that will use the peer_host value, typically an IP address, when the peername cannot be retrieved.
+- Added documentation for treehash params.
+- Added a py.typed file that allows other projects that pip install goldcoin-blockchain to type check using our functions with mypy.
+- Added an RPC for coin records by multiple coin names.
+- Enabled querying AAAA records for DNS Introducer.
+- We now set the version for the GUI when doing a manual install using the install-gui.sh script. Uses a python helper to get the version of the goldcoin install and then converts it into proper npm format and puts that into package.json.
+- Added some new class methods to the Program objects to improve ease of use.
+- Added an option to sign bytes as well as UTF-8 strings, which is particularly helpful if you're writing Goldcoinlisp puzzles that require signatures and you want to test them without necessarily writing a whole python script for signing the relevant data.
+- Added a first version of .pre-commit-config.yaml and applied the changes required by the following initial hooks in separate commits. To use this you need to install pre-commit, see <https://pre-commit.com/#installation/>.
+- We have added many new translations in this release based on community
+submissions. Thanks to @RuiZhe for Chinese, Traditional; @HansCZ for Czech;
+@LUXDAD for English, Australia; @f00b4r for Finnish; @jimkoen, @ruvado for German; @Arielzikri for Hebrew; @A-Caccese for Italian; @Hodokami for Japanese; @LUXDAD for Latvian; @vaexperience for Lithuanian; @LUXDAD for Russian; @juands1644 for Spanish, Argentina; @MrDyngrak, @ordtrogen for Swedish; @richeyphu for Thai; @Ansugo, @baturman for Turkish.
+
+### Changed
+
+- Thanks @altendky for Correct * to ** kwargs unpacking in time_out_assert().
+- Thanks @altendky for changing the default to paginate to goldcoin wallet get_transactions to address cases such as piping and output redirection to a file where the command previously just hung while waiting for the user to press c for the next page.
+- Removed commented-out debug breakpoints.
+- Enabled Rust condition checker to add the ability to parse the output conditions from a  generator program in Rust. It also validates some of the conditions in Rust.
+- Switched IP address lookup to first use Goldcoin's service ip.goldcoin-network.net.
+- Made changes so that when creating SSL certificate and private key files, we ensure that files are written with the proper file permissions.
+- Define a new encrypted keyring format to be used to store keys, and which is optionally encrypted to a user-supplied passphrase. GUI for the passphrase will come in an upcoming release.
+- Removed initial transaction freeze put in place at mainnet launch as it is no longer necessary.
+- Separate locking and non-locking cases for get_confirmed_balance_for_wallet, which will allow calling a few wallet_state_manager methods while already under the wallet_state_manager lock, for example during DID wallet creation.
+- Thanks to @Playwo for removing the index on coin_record spent column to speed up querying.
+- Made a change to the conditions parser to either ignore or fail when it encounters unknown conditions. It also removes the UNKNOWN enum value from ConditionOpcodes.
+- Renamed folder tests/core/types to tests/core/custom_types to address conflicts in debugger in PyCharm.
+- Disabled DID wallet tests while DID wallet is under construction.
+- Added pairing cache for faster aggregate signature verification.
+- Added block height assertions after block farming.
+- Added assertions for tx confirmation.
+
+### Fixed
+
+- Fix single coin generator.
+- Fixed an issue with duplicate plotnft names.
+- Fixed an issue during node shutdown in which some AttributeErrors could be thrown if the shutdown happens before the node fully started up.
+- Fixed mempool TX cache cost, where the cost of the mempool TX cache (for spend bundles that can't be included in a block yet) would not be reset when the cache was emptied.
+- Fixed a failure to create a keychain_proxy for local keychains.
+- Thanks to @mgraczyk for fixing type annotation in sync_store.
+- Thanks to @darkverbito for fixing an issue on initial creation of a coloured coin where code always falls into default else clause due to lack of type conversion.
+- Fixed NPM publish in clvm_rs.
+- Thanks to @skweee for his investigation work on fixing mempool TX cache cost, where the cost of the mempool TX cache (for spend bundles that can't be included in a block yet) would not be reset when the cache was emptied.
+
+## 1.2.3 Goldcoin blockchain 2021-07-26
+
+### Added
+
+- Added ability to change payout instructions in the GUI.
+- Added an option to revert to sequential read. There are some systems (primarily macos+exfat) where the parallel read features results in very long lookup times. This addition makes the parallel feature the default, but adds the ability to disable it and revert back to sequential reads.
+- Added backwards compatibility for Coin Solutions in push_tx since renaming it to CoinSpend.
+- Added an option to set the default constants on the simulator.
+- Added a warning to user to not send money to the pool contract address.
+- Added capability to enable use of a backup key in future, to claim funds that were sent to p2_singleton_puzzle_hash, which today are just ignored.
+- Thanks @aarcro for adding timing metrics to plot check.
+- Thanks @chadwick2143 for adding the ability to set the port to use for the harvester.
+- Added more friendly error reporting for peername errors.
+- We have added many new translations in this release. Thanks to @L3Sota,  @hodokami and @L3Sota for Japanese; @danielrangel6, @memph1x and @dvd101x for Spanish (Mexico); @fsavaget, @semnosao and @ygalvao for Portuguese (Brazilian); @juands1644 for Spanish (Argentina); @darkflare for Portuguese; @wong8888, @RuiZhe, @LM_MA, @ezio20121225, @GRIP123, @11221206 and @nicko1122 for Chinese Traditional; @atomsymbol for Slovak; @SirGeoff and @rolandfarkasCOM for Hungarian; @ordtrogen for Swedish; @HansCZ and @kafkic for Czech; @SupperDog for Chinese Simplified; @baturman and @Ansugo for Turkish; @thebacktrack for Russian; @itservicelukaswinter for German; @saeed508, @Amirr_ezA and @themehran for Persian; @hgthtung for Vietnamese; @f00b4r for Finnish; @IMIMIM for Latvian; @Rothnita and @vanntha85 for Khmer; @Rothnita and @Gammaubl for Thai; @marcin1990 for Polish; @mydienst for Bosnian; @dvd101x and @darkflare for Spanish; @ATSHOOTER for Albanian; @Munyuk81 for Indonesian; @loppefaaret for Danish; @sharjeelaziz and @nzjake for English; @nzjake for English (New Zealand). We apologize if we missed anyone and welcome corrections.
+
+### Changed
+
+- Updated blspy to 1.0.5.
+- Updated goldcoinpos to 1.0.4.
+- Included all Goldcoinlisp files in source distribution.
+- Removed left-over debug logging from test_wallet_pool_store.
+- Made changes to allow us to use the name coin_spend everywhere in our code, without changing it in the API requests, both outgoing and incoming. Enables us to decide at a later date when to cut over completely to the coin_spend name.
+- Thanks @mishan for your change to 'goldcoin plotnft show' to display Percent Successful Points.
+- Thanks @Playwo for your change to make pool payout instructions case insensitive.
+- GUI sees update when plots or harvesters change.
+- Increased the cache interval to help large farmers.
+- Removed proof limit for mainnet, but not testnet. This helps with pools that have very low difficulties. Thanks to @AlexSSD7 for pointing out the issue.
+- We now also allow hex strings prefixed with 0x which is required because we currently prefix the strings in JSON conversion.
+- Thanks to @opayen for your help in updating our MacOS icon.
+
+### Fixed
+
+- Thanks to @dfaranha for helping fix a parsing error in Relic inputs for BLS signatures.
+- Fixed error type in wallet_blockchain.py.
+- Thanks to @seraphik for a fix on our Linux installer that required root privileges.
+- Thanks @felixbrucker for helping fix invalid content-type header issues in pool API requests.
+- The wallet ignores coins sent by accident to the pool contract address and allows self pooling rewards to be claimed in this case.
+- Thanks @mgraczyk for fixing the use of print_exc in farmer.
+
+## 1.2.2 Goldcoin blockchain 2021-07-13
+
+### Fixed
+
+- Converted test_rom.py to use pytest and fixed test_singleton.
+- Thanks to @yshklarov for help fixing [#7273](https://github.com/Goldcoin-Network/goldcoin-blockchain/issues/7273), which bundled CA store to support pools for some farming systems, including M1 Apple computers. This enables those machines to properly connect to pools, and fixes the issue.
+
+## 1.2.1 Goldcoin blockchain 2021-07-12
+
+### Added
+
+- Thanks @feldsam for adding support for Fedora in install-gui script
+
+### Fixed
+
+- Fix harvester cache updates. Prior to this commit the farmer called the `request_plots` every second for each harvester as long as they failed to respond properly. Since the rate limit was 10/minute this lead to hitting the rate limit if the harvester didn't responds for 10 tries in a row for whatever reason. This commit changes the behavior to always keep track of request attempts even if they end up in a timeout to really only re-try every 60s no matter what.
+- Fix M1 installed torrent and installer version number
+- Thanks to @x-Rune for helping find and test a lot of 1.2.0 bugs with the harvester.
+- Fixed issue for Debian users where the wallet crashes on start for them since last release
+
+## 1.2.0 Goldcoin blockchain 2021-07-07
 
 ### Added
 
 - Portable pooled plots are now available using our new plot NFT. These allow you to plot new plots to an NFT that can either self farm or join and leave pools. During development there were changes to the plot NFT so portable pool plots (those made with `-c` option to `goldcoin plots create`) using code from before June 25th are invalid on mainnet.
-OG plots made before this release can continue to be farmed side by side with the new portable pool plots but can not join pools using the official pooling protocol. You can learn more as a farmer by checking out the [pool user guide](https://github.com/pinksheetscrypto/goldcoin-blockchain/wiki/Pooling-User-Guide). Pool operators and those wanting to understand how the official pooling protocol operates should check out our [pooling implementation reference repository](https://github.com/pinksheetscrypto/pool-reference). If you plan to use plot NFT, all your farmers and harvesters must be on 1.2.0 to function properly for portable pool plots.
+OG plots made before this release can continue to be farmed side by side with the new portable pool plots but can not join pools using the official pooling protocol. You can learn more as a farmer by checking out the [pool user guide](https://github.com/Goldcoin-Network/goldcoin-blockchain/wiki/Pooling-User-Guide). Pool operators and those wanting to understand how the official pooling protocol operates should check out our [pooling implementation reference repository](https://github.com/Goldcoin-Network/pool-reference). If you plan to use plot NFT, all your farmers and harvesters must be on 1.2.0 to function properly for portable pool plots.
 - The exact commit after which Plot NFTs should be valid is the 89f7a4b3d6329493cd2b4bc5f346a819c99d3e7b commit (in which `pools.testnet9` branch was merged to main) or 5d62b3d1481c1e225d8354a012727ab263342c0a within the `pools.testnet9` branch.
 - `goldcoin farm summary` and the GUI now use a new RPC endpoint to properly show plots for local and remote harvesters. This should address issues #6563, #5881, #3875, #1461.
 - `goldcoin configure` now supports command line updates to peer count and target peer count.
@@ -19,7 +359,7 @@ OG plots made before this release can continue to be farmed side by side with th
 - Thanks to @maran and @Animazing for adding farmer and pool public key display to the RPC.
 - We have added translations for Hungarian, Belarusian, Catalan, and Albanian.  For Hungarian thanks to @SirGeoff, @azazio @onokaxxx, @rolandfarkasCOM, @HUNDavid , @horvathpalzsolt, @stishun74, @tusdavgaming, @idotitusz, @rasocsabi, @mail.kope, @gsprblnt, @mbudahazi, @csiberius, @tomatos83, @zok42, @ocel0t, @rwtoptomi, @djxpitke, @ftamas85, @zotya0330, @fnni, @kapabeates, @zamery, @viktor.gonczi, @pal.suta, @miv, and @Joeman_. For Belarusian thanks to @shurix83, @haxycgm, and @metalomaniax. For Catalan thank you to @Poliwhirl, @Pep-33, @marqmarti, @meuca, @Guiwdin, @carlescampi, @jairobtx, @Neoares, @darknsis, @augustfarrerasgimeno, and @fornons. Finally for Albanian thanks to @ATSHOOTER and @lakedeejay. We apologize if we missed anyone and welcome corrections.
 - Our release process is now fully automated from tagging a release to publishing installers to all of the appropriate locations and now makes the release artifacts available via torrents as well.
-- All goldcoin repositories now automatically build M1 wheels and create a new MacOS M1 native installer.
+- All Goldcoin repositories now automatically build M1 wheels and create a new MacOS M1 native installer.
 - New CLI command `goldcoin plotnft` to manage pools.
 - We have added a new RPC `get_harvesters` to the farmer. This returns information about remote harvesters and plots.
 - We have added a new RPC `check_delete_key` to the wallet, to check keys prior to deleting them.
@@ -31,15 +371,15 @@ OG plots made before this release can continue to be farmed side by side with th
 ### Changed
 
 - We have made a host of changes to the GUI to support pooling and to improve the wallet experience.
-- We updated chiapos to version 1.0.3. This adds parallel reads to GetFullProof. Thanks to @marcoabreu ! We now print target/final directory early in the logs refs and log process ID. Thanks to @grayfallstown ! We are now using Gulrak 1.5.6.
-@683280 optimized code in phase1.hpp. @jespino and @mrhacky started migrating to flags instead of booleans parameters for `show_progress` and `nobitfield`. If you are providing third-party tools you may need to make adjustments if relying on the chiapos log.
-- Updated chiavdf to version 1.0.2 to fix certain tests.
+- We updated goldcoinpos to version 1.0.3. This adds parallel reads to GetFullProof. Thanks to @marcoabreu ! We now print target/final directory early in the logs refs and log process ID. Thanks to @grayfallstown ! We are now using Gulrak 1.5.6.
+@683280 optimized code in phase1.hpp. @jespino and @mrhacky started migrating to flags instead of booleans parameters for `show_progress` and `nobitfield`. If you are providing third-party tools you may need to make adjustments if relying on the goldcoinpos log.
+- Updated goldcoinvdf to version 1.0.2 to fix certain tests.
 - Windows builds now rely upon Python 3.9 which obviates the fix in 1.1.7.
 - We are now using miniupnpc version 2.2.2 so that we can support Python 3.9 on Windows.
 - We updated to clvm 0.9.6 and clvm_rs 0.1.8. CLVMObject now lazily converts python types to CLVM types as elements are inspected in clvm. cvlm_rs now returns python objects rather than a serialized object.
 - We now have rudimentary checks to makes sure that fees are less than the amount being spent.
 - The harvester API no longer relies upon time:time with thanks to @x1957.
-- We have increased the strictness of validating chialisp in the mempool and clvm.
+- We have increased the strictness of validating Goldcoinlisp in the mempool and clvm.
 - Thanks to @ruslanskorb for improvements to the human-readable forms in the CLI.
 - Thanks to @etr2460 for improvements to the plotting progress bar in the GUI and enhancements to human-readable sizes.
 - @dkackman changed the way that configuration was found on startup.
@@ -60,7 +400,7 @@ OG plots made before this release can continue to be farmed side by side with th
 - Fixed a potential timelord bug that could lead to a chain stall.
 - Add an explicit error message when mnemonic words are not in the dictionary; should help users self-service issues like #3425 faster. Thank you to @elliotback for this PR.
 - Thank you to @Nikolaj-K for various typo corrections around the Mozilla CA, code simplifications and improvements in converting to human-readable size estimations, and clean up in the RPCs and logging.
-- Thank you to @goldcoinMineJP for various improvements.
+- Thank you to @GoldcoinMineJP for various improvements.
 - @asdf2014 removed some useless code in the wallet node API.
 - Thanks to @willi123yao for a fix to under development pool wallets.
 - `goldcoin farm summary` better handles wallet errors.
@@ -74,13 +414,13 @@ OG plots made before this release can continue to be farmed side by side with th
 
 - If you resync your wallet, transactions made with your plot NFTs will show incorrectly in the GUI. The internal accounting, and total balance displayed is correct.
 
-### 1.1.7 goldcoin Blockchain 2021-06-05
+### 1.1.7 Goldcoin Blockchain 2021-06-05
 
 ### Fixed
 
 Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite limit (999 for Python 3.7 on Windows). Fixes sqlite3.OperationalError: too many SQL variables error and resulting issues with syncing wallets on Windows.
 
-## 1.1.6 goldcoin Blockchain 2021-05-20
+## 1.1.6 Goldcoin Blockchain 2021-05-20
 
 ### Added
 
@@ -107,7 +447,7 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 - Optimized Streamable parsing by avoiding extra post-init checks, making parsing block records from database up to 40% faster.
 - Made the serialization of Coin follow the normal protocol of implementing stream().
 - Minor improvements to add_spendbundle and weight proofs.
-- We now use version 1.0.2 of chiapos. We now reopen files on read or write failure with thanks to @mreid-moz! We also prevent chiapos prover crashing for more bad plots.
+- We now use version 1.0.2 of goldcoinpos. We now reopen files on read or write failure with thanks to @mreid-moz! We also prevent goldcoinpos prover crashing for more bad plots.
 - Disabled deletion of running plot for Windows users as the crash/lockup bug has returned.
 - We more clearly prohibit root from installing/running the GUI.
 - Thanks to @sargonas for improvements to the template for creating Issues.
@@ -124,13 +464,13 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 - Thanks to @msg7086 for fixing install.sh for Debian.
 - And thank you to @alfonsoperez, @asdf2014, @fredericosilva, @lamba09, @Nikolaj-K, @sargonas, @aisk, @Ich5003, and @trumankain for various other fixes and improvements.
 
-## 1.1.5 goldcoin Blockchain 2021-05-09
+## 1.1.5 Goldcoin Blockchain 2021-05-09
 
 ### Fixed
 
 - We were not checking for negative values in the uint64 constructor. Therefore coins with negative values were added to the mempool. These blocks passed validation, but they did not get added into the blockchain due to negative values not serializing in uint64. Farmers making these blocks would make blocks that did not make it into or advance the chain, so the blockchain slowed down starting at block 255518 around 6:35AM PDT 5/9/2021. The fix adds a check in the mempool and block validation, and does not disconnect peers who send these invalid blocks (any peer 1.1.4 or older), making this update not mandatory but is recommended. Users not updating might see their blocks get rejected from other peers. Upgraded nodes will show an error when they encounter an old node trying to send an invalid block. This "Consensus error 124..." can be safely ignored.
 
-## 1.1.4 goldcoin Blockchain 2021-05-04
+## 1.1.4 Goldcoin Blockchain 2021-05-04
 
 ### Changed
 
@@ -145,7 +485,7 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 - Two issues with processing Weight Proofs during syncing while farming.
 - Fixed a bug in the outgoing rate control logic that could prevent messages being sent.
 
-## 1.1.3 goldcoin Blockchain 2021-05-01
+## 1.1.3 Goldcoin Blockchain 2021-05-01
 
 ### Added
 
@@ -156,7 +496,7 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 
 - We now require node 12.x to build the GUI. Installers have been building using node 12.x for quite some time.
 - Node will now farm while syncing.
-- We changed chialisp singletons to take a puzzlehash as its origin. We also updated the DID wallet to use this.
+- We changed goldcoinlisp singletons to take a puzzlehash as its origin. We also updated the DID wallet to use this.
 - Transactions are now cached for 10 minutes in mempool to retry if there is a failure of a spending attempt.
 - Thank you to @Chida82 who made the log rotation count fully configurable. Apologies to him for not initially being included here.
 - Thank you to @fiveangle for making install.sh more resilient across python installations.
@@ -170,7 +510,7 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 - @martomi added logging of added coins back.
 - Thank you to @aisk for additional type checking.
 - @aisk added error checking in bech32m
-- chialisp programs now remained serialized in Node for better performance.
+- Goldcoinlisp programs now remained serialized in Node for better performance.
 - Mempool is now set to be 50 times the single block size.
 - Mitigate 1-3 mojo dust attacks.
 - CLI now switches to EiB for netspace display as appropriate.
@@ -190,7 +530,7 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 - Thanks @antoniobg for a typo fix in keychain.py.
 - Thanks to @altendky for catching a Copyright date error.
 
-## 1.1.2 goldcoin Blockchain 2021-04-24
+## 1.1.2 Goldcoin Blockchain 2021-04-24
 
 ### Changed
 
@@ -201,7 +541,7 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 - When attempting to sync, connections could accidentally disconnect for rate limiting reasons. This was causing many to not be able to sync.
 - Some temp files were not being closed during GUI plotting.
 
-## 1.1.1 goldcoin Blockchain 2021-04-21
+## 1.1.1 Goldcoin Blockchain 2021-04-21
 
 ### Added
 
@@ -215,12 +555,12 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 
 - Changes were made in 1.1.0 to make sure that even out of order signage points were found and responded to by as many farmers as possible. That change lead to a situation where the harvester could thrash on the same cached signage point.
 
-## 1.1.0 goldcoin Blockchain 2021-04-21
+## 1.1.0 Goldcoin Blockchain 2021-04-21
 
 ### Added
 
-- This fork release includes full transaction support for the goldcoin Blockchain. Transactions are still disabled until 5/3/2021 at 10:00AM PDT. It is hard to overstate how much work and clean up went into this release.
-- This is the 1.0 release of chialisp. Much has been massaged and finalized. We will be putting a focus on updating and expanding the documentation on [chialisp.com](https://chialisp.com) shortly.
+- This fork release includes full transaction support for the Goldcoin Blockchain. Transactions are still disabled until 5/3/2021 at 10:00AM PDT. It is hard to overstate how much work and clean up went into this release.
+- This is the 1.0 release of Goldcoinlisp. Much has been massaged and finalized. We will be putting a focus on updating and expanding the documentation on [goldcoinlisp.com](https://goldcoinlisp.com) shortly.
 - Farmers now compress blocks using code snippets from previous blocks. This saves storage space and allows larger smart coins to have a library of sorts on chain.
 - We now support offline signing of coins.
 - You can now ask for an offset wallet receive address in the cli. Thanks @jespino.
@@ -241,7 +581,7 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 - Timelords are now successfully infusing almost 100% of blocks.
 - Harvester should be a bit more tolerant of some bad plots.
 
-## 1.0.5 goldcoin Blockchain 2021-04-14
+## 1.0.5 Goldcoin Blockchain 2021-04-14
 
 ### Added
 
@@ -260,7 +600,7 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 - Our estimate for k=32 was about 0.4GiB too low in some cases.
 - Building the GUI in especially ARM64 Linux was painful enough to be considered broken.
 
-## 1.0.4 goldcoin Blockchain 2021-04-12
+## 1.0.4 Goldcoin Blockchain 2021-04-12
 
 ### Added
 
@@ -284,23 +624,23 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 - Wallet start up would have a race condition that output a harmless error on startup.
 - Thanks for a typo fix from @alfonsoperez.
 
-## 1.0.3 goldcoin Blockchain 2021-03-30
+## 1.0.3 Goldcoin Blockchain 2021-03-30
 
 ### Added
 
 - This is a minor bug fix release for version 1.0.2
-- You should review the [release notes for v1.0.2](https://github.com/pinksheetscrypto/goldcoin-blockchain/releases/tag/1.0.2) but we especially want to point out that wallet sync is much faster than in 1.0.1 and earlier versions.
+- You should review the [release notes for v1.0.2](https://github.com/Goldcoin-Network/goldcoin-blockchain/releases/tag/1.0.2) but we especially want to point out that wallet sync is much faster than in 1.0.1 and earlier versions.
 
 ### Fixed
 
 - An incorrect merge brought in unreleased features and broke `goldcoin keys`.
-- Omitted from the 1.0.2 changelog, we fixed one crash in harvester with the release of chiapos 1.0.0 as well.
+- Omitted from the 1.0.2 changelog, we fixed one crash in harvester with the release of goldcoinpos 1.0.0 as well.
 
-## 1.0.2 goldcoin Blockchain 2021-03-30
+## 1.0.2 Goldcoin Blockchain 2021-03-30
 
 ### Added
 
-- We have released version 1.0.0 of [chiapos](https://github.com/pinksheetscrypto/chiapos). This includes a 20% speed increase for bitfield plotting compared to the previous version on the same machine. In many cases this will mean that bitfield plotting is as fast or faster than non bitfield plotting.
+- We have released version 1.0.0 of [goldcoinpos](https://github.com/Goldcoin-Network/goldcoinpos). This includes a 20% speed increase for bitfield plotting compared to the previous version on the same machine. In many cases this will mean that bitfield plotting is as fast or faster than non bitfield plotting.
 - @xorinox improved our support for RedHat related distributions in `install.sh`.
 - @ayaseen improved our support for RedHat related distributions in `install-timelord.sh`.
 - We have added Dutch and Polish to supported translations. Thanks @psydafke, @WesleyVH, @pieterhauwaerts, @bartlomiej.tokarzewski, @abstruso, @feel.the.code, and @Axadiw for contributions to [translations on Crowdin](https://crowdin.com/project/goldcoin-blockchain).
@@ -327,7 +667,7 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 - There was a potential node locking issue that could have prevented a Timelord from getting a new peak and cause a chain stall.
 - We did not correctly support some Crowdin locales. Pirate English was starting to overwrite US English for example.
 
-## 1.0.1 goldcoin Blockchain 2021-03-23
+## 1.0.1 Goldcoin Blockchain 2021-03-23
 
 ### Added
 
@@ -348,11 +688,11 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 - Users can now pip install e.g. goldcoin-blockchain==1.0.1 on most platforms.
 - Sometimes the GUI had an error regarding MainWindow.
 
-## 1.0.0 First Release of goldcoin Blockchain 2021-03-17
+## 1.0.0 First Release of Goldcoin Blockchain 2021-03-17
 
 ### Added
 
-- This is the first production release of the goldcoin Blockchain. This can be installed and will wait for the green flag that will be dropped at approximately 7AM PDST (14:00 UTC) on Friday March 19, 2021. All farming rewards from that point forward will be considered valid and valuable ozt. There is a six week lock on all transactions. During those six weeks farmers will be earning their farming rewards but those rewards can not be spent.
+- This is the first production release of the Goldcoin Blockchain. This can be installed and will wait for the green flag that will be dropped at approximately 7AM PDST (14:00 UTC) on Friday March 19, 2021. All farming rewards from that point forward will be considered valid and valuable OZT. There is a six week lock on all transactions. During those six weeks farmers will be earning their farming rewards but those rewards can not be spent.
 - Initial difficulty will be set for 100PB. This may mean the initial epoch may be slow. Mainnet difficulty resets are targeted for 24 hours so this difficulty will adjust to the actual space brought online in 24 to 48 hours after launch.
 - Transactions are not enabled in the 1.0.0 version and will be soft forked in during the six week period via a 1.1.0 release.
 - There will also be a 1.0.1 release after the green flag process is complete to simplify install for new users by removing the green flag alert. In the interim there will be new testnet releases using the 1.1bx version scheme.
@@ -392,7 +732,7 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 
 ### Added
 
-- This is a hard fork/breaking change from RC6/7. Tozt Coins will **not** be moved forward but your plots and keys and parts of your configuration do. When you install this version before 10AM PDST on 3/16/2021 it will load up, start finding peers, and otherwise wait for the flag drop at that time to start farming. This is likely to be the last dress rehearsal for mainnet launch. Our [3/15/2021 blog post](https://www.goldcoin-network.net/2021/03/15/mainnet-update.html) has more details on the current mainnet launch plan.
+- This is a hard fork/breaking change from RC6/7. TOZT Coins will **not** be moved forward but your plots and keys and parts of your configuration do. When you install this version before 10AM PDST on 3/16/2021 it will load up, start finding peers, and otherwise wait for the flag drop at that time to start farming. This is likely to be the last dress rehearsal for mainnet launch. Our [3/15/2021 blog post](https://www.goldcoin-network.net/2021/03/15/mainnet-update.html) has more details on the current mainnet launch plan.
 - The GUI now has a tooltip that directs users to the explanation of the plot filter.
 - The GUI now has a tooltip to explain the "Disable bitfield plotting" option. Thanks @shaneo257 for the idea.
 - The GUI now has a tooltip to explain Hierarchical Deterministic keys next to Receive Address on the Wallet page.
@@ -403,7 +743,7 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 - Harvester now catches another error class and continues to harvest. Thanks to @xorinox for this PR.
 - We now use a smaller weight proof sample size to ease the load on smaller machines when syncing.
 - Starting the GUI from Linux will now also error out if `npm run build` is run outside the venv. Huge thanks to @dkackman for that PR.
-- `goldcoin farm summary` will now display Tozt or ozt as appropriate.
+- `goldcoin farm summary` will now display TOZT or OZT as appropriate.
 - We added more time to our API timeouts and improved logging around times outs.
 
 ### Fixed
@@ -436,13 +776,13 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 
 ### Known Issues
 
-- Some users can't plot in the GUI in MacOS Big Sur - especially on M1. See issue [1189](https://github.com/pinksheetscrypto/goldcoin-blockchain/issues/1189)
+- Some users can't plot in the GUI in MacOS Big Sur - especially on M1. See issue [1189](https://github.com/Goldcoin-Network/goldcoin-blockchain/issues/1189)
 
 ## 1.0rc6 aka Release Candidate 6 - 2021-03-11
 
 ### Added
 
-- This is a hard fork/breaking change from RC5. Tozt Coins will **not** be moved forward but your plots and keys and parts of your configuration do. We will be testing the final mainnet release strategy with the launch of RC6. For the test, those who are comfortable running the dev branch will update and start up their farms. All harvesters and plots will load and until the green flag drops, peers will be gossiped so your farm can establish good network connectivity. When the flag drops, each node will pull down the signed genesis challenge and start farming. Block 1 will be broadcast to anyone who hasn't seen the flag drop yet. The only difference for mainnet is that there will be 1.0 installers and a main branch release more than 24 hours before the real green flag.
+- This is a hard fork/breaking change from RC5. TOZT Coins will **not** be moved forward but your plots and keys and parts of your configuration do. We will be testing the final mainnet release strategy with the launch of RC6. For the test, those who are comfortable running the dev branch will update and start up their farms. All harvesters and plots will load and until the green flag drops, peers will be gossiped so your farm can establish good network connectivity. When the flag drops, each node will pull down the signed genesis challenge and start farming. Block 1 will be broadcast to anyone who hasn't seen the flag drop yet. The only difference for mainnet is that there will be 1.0 installers and a main branch release more than 24 hours before the real green flag.
 - There is now basic plot queueing functionality in the GUI. By default, plotting works as it has in the past. However you can now name a queue in Step 2 Advanced Options. Chose something like `first`. Everything you add to the `first` queue will start up like it has in the past but now you can go through the steps again and create a queue named `second` and it will immediately start plotting as if it is unaware of and parallel with `first`. A great use case is that you would set `first` to plot 5 plots sequentially and then you'd set `second` to plot 5 sequentially and that would give you two parallel queues of 5 plot's each. We will be returning to plotting speed and UI soon. Thanks @jespino for this clever work around for now.
 - There is now an option on the Farm page to manage your farming rewards receive addresses. This makes it easy to send your farming rewards to an offline wallet. This also checks your existing rewards addresses and warns if you do not have the matching private key. That is expected if you are using an offline wallet of course.
 - Functionally has been added to the farmer rpc including checking and changing your farming rewards target addresses.
@@ -454,9 +794,9 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 
 - Remove `goldcoin plots "-s" "--stripe_size"` and the strip size setting in the Advanced section of the GUI. We now always use the best default of 64K for the GUI and cli.
 - `goldcoin keys add` takes secret words a prompt on the command line or stdin instead of command line arguments for security.
-- Version 1.0.1 of chiavdf was added. This brought MPIR on Windows to the most recent release. Additionally we removed inefficient ConvertIntegerToBytes() and ConvertBytesToInt() functions, use GMP library's mpz_export/mpz_import for big integers and simple helper functions for built-in integer types. The latter are taken from chiavdf. We now require compressed forms to be encoded canonically when deserializing. This should prevent potential grinding attacks where some non-canonical encodings of a compressed form could be used to change its hash and thus the next challenges derived from it. Canonically encoded compressed forms must be reduced and must produce the same string when deserialized and serialized again.
+- Version 1.0.1 of goldcoinvdf was added. This brought MPIR on Windows to the most recent release. Additionally we removed inefficient ConvertIntegerToBytes() and ConvertBytesToInt() functions, use GMP library's mpz_export/mpz_import for big integers and simple helper functions for built-in integer types. The latter are taken from goldcoinvdf. We now require compressed forms to be encoded canonically when deserializing. This should prevent potential grinding attacks where some non-canonical encodings of a compressed form could be used to change its hash and thus the next challenges derived from it. Canonically encoded compressed forms must be reduced and must produce the same string when deserialized and serialized again.
 - Version 1.0 of our BLS signature library is included. We brought Relic, gmp and MPIR up to their most recent releases. We again thank the Dash team for their fixes and improvements.
-- We now hand build Apple Silicon native binary wheels for all goldcoin-blockchain dependencies and host them at [https://pypi.chia.net/simple](https://pypi.chia.net/simple). We are likely to hand build a MacOS ARM64 dmg available and certainly will for 1.0. You can install natively on M1 now with the `git clone` developer method today. Just make sure Python 3.9 is installed. `python3 --version` works.
+- We now hand build Apple Silicon native binary wheels for all goldcoin-blockchain dependencies and host them at [https://pypi.goldcoin-network.net/simple](https://pypi.goldcoin-network.net/simple). We are likely to hand build a MacOS ARM64 dmg available and certainly will for 1.0. You can install natively on M1 now with the `git clone` developer method today. Just make sure Python 3.9 is installed. `python3 --version` works.
 - The GUI now shows you which network you are connected to on the Full Node page. It will also wait patiently for the green flag to drop on a network launch.
 - In the GUI you can only plot k=32 or larger with the single exception of k=25 for testing. You will have to confirm choosing k=25 however. Thanks to @jespino for help on this and limiting the cli as well.
 - The restore smart wallets from backup prompt has been improved to better get the intent across and that it can be skipped.
@@ -467,20 +807,20 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 - There are new timestamp consensus rules. A block N must have a greater timestamp than block N-1. Also, a block's timestamp cannot be more than 5 minutes in the future. Note that we have decided that work factor difficulty resets are now going to be 24 hours on mainnet but are still shorter on testnet.
 - A List[Tuple[uint16, str]] is added to the peer network handshake. These are the capabilities that the node supports, to add new features to the protocol in an easy - soft fork - manner. The message_id is now before the data in each message.
 - Peer gossip limits were set.
-- Generators have been re-worked in CLVM. We added a chialisp deserialization puzzle and improved the low-level generator. We reduce the accepted atom size to 1MB during chialisp native deserialization.
+- Generators have been re-worked in CLVM. We added a goldcoinlisp deserialization puzzle and improved the low-level generator. We reduce the accepted atom size to 1MB during GoldcoinLisp native deserialization.
 - When processing mempool transactions, Coin IDs are now calculated from parent coin ID and amount
 - We implemented rate limiting for full node. This can and will lead to short term bans of certain peers that didn't behave in expected ways. This is ok and normal, but strong defense against many DDOS attacks.
 - `requirements-dev.txt` has been removed in favor of the CI actions and test scripts.
 - We have moved to a new and much higher scalability download.goldcoin-network.net to support the mainnet launch flag and additional download demand.
 - To always get the latest testnet and then mainnet installers you can now use a latest URL: [Windows](https://download.goldcoin-network.net/latest/Setup-Win64.exe) and [MacOS x86_64](https://download.goldcoin-network.net/latest/Setup-MacOS.dmg).
-- goldcoin wheels not on Pypi and some dependecies not found there also are now on pypi.chia.net.
+- Goldcoin wheels not on Pypi and some dependecies not found there also are now on pypi.goldcoin-network.net.
 - Additional typing has been added to the Python code with thanks to @jespino.
 - Cryptography and Keyring have been bumped to their current releases.
 - PRs and commits to the goldcoin-blockchain-gui repository will automatically have their locales updated.
 
 ## Fixed
 
-- The Farm page will now no longer get stuck at 50 Tozt farmed.
+- The Farm page will now no longer get stuck at 50 TOZT farmed.
 - `goldcoin farm` has had multiple bugs and spelling issues addressed. Thanks to @alfonsoperez, @soulmerge and @olivernyc for your contributions.
 - `goldcoin wallet` had various bugs.
 - Various weight proof improvements.
@@ -494,14 +834,14 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 
 ### Added
 
-- The RC5 release is a new breaking change/hard fork blockchain. Plots and keys from previous chains will work fine on RC5 but balances of Tozt will not come forward.
+- The RC5 release is a new breaking change/hard fork blockchain. Plots and keys from previous chains will work fine on RC5 but balances of TOZT will not come forward.
 - We now support a "green flag" chain launch process. A new version of the software will poll download.goldcoin-network.net/notify/ for a signed json file that will be the genesis block of the chain for that version. This will allow unattended start at mainnet.
 - Bluebox Timelords are back. These are Timelords most anyone can run. They search through the historical chain and find large proofs of times and compact them down to their smallest representation. This significantly speeds up syncing for newly started nodes. Currently this is only supported on Linux and MacOS x86_64 but we will expand that. Any desktop or server of any age will be fast enough to be a useful Bluebox Timelord.
 - Thanks to @jespino there is now `goldcoin farm summary`. You can now get almost exactly the same farming information on the CLI as the GUI.
 - We have added Romanian to the GUI translations. Thank you to @bicilis on [Crowdin](https://crowdin.com/project/goldcoin-blockchain). We also added a couple of additional target languages. Klingon anyone?
 - `goldcoin wallet` now takes get_address to get a new wallet receive address from the CLI.
 - `goldcoin plots check` will list out all the failed plot filenames at the end of the report. Thanks for the PR go to @eFishCent.
-- chialisp and the clvm have had the standard puzzle updated and we replaced `((c P A))` with `(a P A)`.
+- Goldcoinlisp and the clvm have had the standard puzzle updated and we replaced `((c P A))` with `(a P A)`.
 
 ## Changed
 
@@ -511,14 +851,14 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 - We have updated the display of peer nodes and moved adding a peer to it's own pop up in the GUI.
 - Block searching in the GUI has been improved.
 - @jespino added i18n support and refactored how locales are loaded in the GUI. Additionally he moved more strings into the translation infrastructure for translators.
-- In chiavdf we changed n-Wesolowski proofs to include B instead of y in segments. Proof segments now have the form (iters, B, proof) instead of (iters, y, proof). This reduces proof segment size from 208 to 141 bytes.
-- The new chiavdf proof format is not compatible with the old one, however zero-Wesolowski proofs are not affected as they have zero proof segments and consist only of (y, proof).
-- We made two HashPrime optimizations in chiavdf. This forces numbers being tested for primality to be odd and avoids an unnecessary update of the sprout vector by stopping after the first non-zero value. This is a breaking change as it changes the prime numbers generated from a given seed. We believe this is the final breaking change for chiavdf.
-- chiabip158 was set to a gold 1.0 version.
-- Comments to chialisp and clvm source have been updated for all of the chialisp changes over the proceeding three weeks.
+- In goldcoinvdf we changed n-Wesolowski proofs to include B instead of y in segments. Proof segments now have the form (iters, B, proof) instead of (iters, y, proof). This reduces proof segment size from 208 to 141 bytes.
+- The new goldcoinvdf proof format is not compatible with the old one, however zero-Wesolowski proofs are not affected as they have zero proof segments and consist only of (y, proof).
+- We made two HashPrime optimizations in goldcoinvdf. This forces numbers being tested for primality to be odd and avoids an unnecessary update of the sprout vector by stopping after the first non-zero value. This is a breaking change as it changes the prime numbers generated from a given seed. We believe this is the final breaking change for goldcoinvdf.
+- goldcoinbip158 was set to a gold 1.0 version.
+- Comments to Goldcoinlisp and clvm source have been updated for all of the Goldcoinlisp changes over the proceeding three weeks.
 - And thanks yet again to @jespino for a host of PRs to add more detailed typing to various components in goldcoin-blockchain.
 - aiohttp was updated to 3.7.4 to address a low severity [security issue](https://github.com/advisories/GHSA-v6wp-4m6f-gcjg).
-- calccrypto/uint128_t was updated in the Windows chiapos implementation. chiapos required some changes its build process to support MacOS ARM64.
+- calccrypto/uint128_t was updated in the Windows goldcoinpos implementation. Goldcoinpos required some changes its build process to support MacOS ARM64.
 
 ### Fixed
 
@@ -529,7 +869,7 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 - Python root CA certificates have issues so we have added the Mozilla certificate store via curl.se and use that to connect to backup.goldcoin-network.net via https, for example.
 - The difficulty adjustment calculation was simplified.
 - All of the goldcoin sub repositories that were attempting to build MacOS Universal wheels were only generating x86_64 wheels internally. We have moved back to only generating x86_64 MacOS wheels on CI.
-- However, we have updated and test compiled all goldcoin dependencies on Apple Silicon and will be making available a test .dmg for MacOS ARM64 shortly.
+- However, we have updated and test compiled all Goldcoin dependencies on Apple Silicon and will be making available a test .dmg for MacOS ARM64 shortly.
 - Various weight proof edge cases have been fixed.
 - Various typos and style clean ups were made to the Click CLI implementation. `goldcoin -upnp f` was added to disable uPnP.
 - `goldcoin plots check` shouldn't crash when encountering plots that cause RuntimeError. PR again thanks to @eFishCent.
@@ -545,9 +885,9 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 
 ### Added
 
-- RC3 is a new chain to support the last major chialisp changes. Tozt from the RC1/2 chain do not come forward to this chain but plots and keys continue to work as usual.
+- RC3 is a new chain to support the last major goldcoinlisp changes. TOZT from the RC1/2 chain do not come forward to this chain but plots and keys continue to work as usual.
 - We have lowered the transaction lock to the first 5000 blocks to facilitate testing. We also started this chain at a lower difficulty.
-- A new RPC api: /push_tx. Using this RPC, you can spend custom chialisp programs. You need to make a SpendBundle, which includes the puzzle reveal (chialisp), a solution (chialisp) and a signature.
+- A new RPC api: /push_tx. Using this RPC, you can spend custom goldcoinlisp programs. You need to make a SpendBundle, which includes the puzzle reveal (goldcoinlisp), a solution (goldcoinlisp) and a signature.
 - You can now use the RPC apis to query the mempool.
 - There are now Swedish, Spanish, and Slovak translations. Huge thanks to @ordtrogen (Swedish), @jespino and @dvd101x (Spanish), and our own @seeden (Slovak). Also thanks were due to @f00b4r (Finnish), @A-Caccese (Italian), and @Bibop182 and @LeonidShamis (Russian). Quite a few more are almost complete and ready for inclusion. You can help translate and review translations at our [crowdin project](https://crowdin.com/project/goldcoin-blockchain).
 - You can obtain a new wallet receive address on the command line with `goldcoin wallet new_address`. Thanks to @jespino for this and a lot more in the next section below.
@@ -555,9 +895,9 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 
 ### Changed
 
-- All chialisp opcodes have been renumbered. This should be the last major breaking change for chialisp and the clvm. There are a couple minor enhancements still needed for mainnet launch, but they may or may not require minor breaking changes. We will be restarting testnet chains on a mostly weekly basis either way.
+- All goldcoinlisp opcodes have been renumbered. This should be the last major breaking change for goldcoinlisp and the clvm. There are a couple minor enhancements still needed for mainnet launch, but they may or may not require minor breaking changes. We will be restarting testnet chains on a mostly weekly basis either way.
 - Node batch syncing performance was increased, and it now avoids re-validating blocks that node had already validated.
-- The entire CLI has been ported to [Click](https://click.palletsprojects.com/en/7.x/). Huge thanks to @jespino for the big assist and @unparalleled-js for the [recommendation and the initial start](https://github.com/pinksheetscrypto/goldcoin-blockchain/issues/464). This will make building out the CLI much easier. There are some subtle changes and some shortcuts are not there anymore. `goldcoin -h` and `goldcoin SUBCOMMAND -h` can be your guide.
+- The entire CLI has been ported to [Click](https://click.palletsprojects.com/en/7.x/). Huge thanks to @jespino for the big assist and @unparalleled-js for the [recommendation and the initial start](https://github.com/Goldcoin-Network/goldcoin-blockchain/issues/464). This will make building out the CLI much easier. There are some subtle changes and some shortcuts are not there anymore. `goldcoin -h` and `goldcoin SUBCOMMAND -h` can be your guide.
 - We have upgraded Electron to 11.3 to support Apple Silicon. There are still one or two issues in our build chain for Apple Silicon but we should have an M1 native build shortly.
 - The websocket address is no longer displayed in the GUI unless it is running as a remote GUI. Thanks @dkackman !
 - `goldcoin plots check` now will continue checking after it finds an error in a plot to the total number of checks you specified.
@@ -588,7 +928,7 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 
 ### Fixed
 
-- This is an errata release for Release Candidate 1. There were a couple of things that did not smoothly migrate from the Beta versions. Please make sure you also consult the [release notes for RC-1](https://github.com/pinksheetscrypto/goldcoin-blockchain/releases/tag/1.0rc1) was well.
+- This is an errata release for Release Candidate 1. There were a couple of things that did not smoothly migrate from the Beta versions. Please make sure you also consult the [release notes for RC-1](https://github.com/Goldcoin-Network/goldcoin-blockchain/releases/tag/1.0rc1) was well.
 - Incorrect older spend to addresses were being migrated from Beta 27. This would send farming rewards to un-spendable coins.
 - Netspace was not calculating properly in RC-1.
 - The Windows installer was building with the wrong version number.
@@ -598,15 +938,15 @@ Batch process weight proof epochs in groups of 900 to fit below May 2020 sqlite 
 
 ### Added
 
-- This is the first release in our release candidate series. There are still a few things that will change at the edges but the blockchain, clvm, and chialisp are in release form. We have one major change to chialisp/clvm that we have chosen to schedule for the next release as in this release we're breaking the way q/quote works. We also have one more revision to the VDF that will decrease the sizes of the proofs of time. We expect a few more releases in the release candidate series.
-- Installers will now be of the pattern goldcoinSetup-0.2.1.exe. `0.2` is release candidate and the final `.1` is the first release candidate.
+- This is the first release in our release candidate series. There are still a few things that will change at the edges but the blockchain, clvm, and goldcoinlisp are in release form. We have one major change to goldcoinlisp/clvm that we have chosen to schedule for the next release as in this release we're breaking the way q/quote works. We also have one more revision to the VDF that will decrease the sizes of the proofs of time. We expect a few more releases in the release candidate series.
+- Installers will now be of the pattern GoldcoinSetup-0.2.1.exe. `0.2` is release candidate and the final `.1` is the first release candidate.
 - Use 'goldcoin wallet get_transactions' in the command line to see your transactions.
 - 'goldcoin wallet show' now shows your wallet's height.
 - Last Attempted Proof is now above Latest Block Challenge on the Farm page of the GUI.
 - The GUI now detects duplicate plots and also only counts unique plots and unique plot size.
-- We have integrated with crowdin to make it easier to translate the GUI. Check out [goldcoin Blockchain GUI](https://crowdin.com/project/goldcoin-blockchain) there.
+- We have integrated with crowdin to make it easier to translate the GUI. Check out [Goldcoin Blockchain GUI](https://crowdin.com/project/goldcoin-blockchain) there.
 - We have added Italian, Russian, and Finnish. More to come soon.
-- There is now remote UI support. [Documents](https://github.com/pinksheetscrypto/goldcoin-blockchain-gui/blob/main/remote.md) will temporarily live in the repository but have moved to the [wiki](https://github.com/pinksheetscrypto/goldcoin-blockchain/wiki/Connecting-the-UI-to-a-remote-daemon). Thanks to @dkackman for this excellent addition!
+- There is now remote UI support. [Documents](https://github.com/Goldcoin-Network/goldcoin-blockchain-gui/blob/main/remote.md) will temporarily live in the repository but have moved to the [wiki](https://github.com/Goldcoin-Network/goldcoin-blockchain/wiki/Connecting-the-UI-to-a-remote-daemon). Thanks to @dkackman for this excellent addition!
 - Added the ability to specify an address for the pool when making plots (-c flag), as opposed to a public key. The block
 validation was changed to allow blocks like these to be made. This will enable changing pools in the future, by specifying a smart transaction for your pool rewards.
 - Added `goldcoin plots check --challenge-start [start]` that begins at a different `[start]` for `-n [challenges]`. Useful when you want to do more detailed checks on plots without restarting from lower challenge values you already have done. Huge thanks to @eFishCent for this and all of the debugging work behind the scenes confirming that plot failures were machine errors and not bugs!
@@ -616,14 +956,14 @@ validation was changed to allow blocks like these to be made. This will enable c
 - Sub blocks renamed to blocks, and blocks renamed to transaction blocks, everywhere. This effects the RPC, now
 all fields that referred to sub blocks are changed to blocks.
 - Base difficulty and weight have increased, so difficulty of "5" in the rc1 testnet will be equivalent to "21990232555520" in the previous testnet.
-- 'goldcoin wallet send' now takes in Tozt or ozt as units instead of mojos.
+- 'goldcoin wallet send' now takes in TOZT or OZT as units instead of mojos.
 - Transactions have been further sped up.
 - The blockchain database has more careful validation.
 - The GUI is now using bech32m.
 
 ### Fixed
 
-- We updated chiapos to hopefully address some harvester crashes when moving plot files.
+- We updated goldcoinpos to hopefully address some harvester crashes when moving plot files.
 - Many of the cards on the Farming page have had bugs addressed including last block farmed, block rewards, and user fees.
 - Improved validation of overflow blocks.
 
@@ -631,23 +971,23 @@ all fields that referred to sub blocks are changed to blocks.
 
 ### Added
 
-- The Beta 27 chain is a hard fork. All Tozt from previous releases has been reset on this chain. Your keys and plots of k=32 or larger continue to work just fine on this new chain.
+- The Beta 27 chain is a hard fork. All TOZT from previous releases has been reset on this chain. Your keys and plots of k=32 or larger continue to work just fine on this new chain.
 - We now use the rust version of clvm, clvm_rs, in preference to validate transactions. We have additionally published binary wheels or clvm_rs for all four platforms and all three supported python versions. The rust version is approximately 50 times faster than the python version used to validate on chain transactions in previous versions.
-- We have moved to compressed quadratic forms for VDFs. Using compressed representation of quadratic forms reduces their serialized size from 130 to 100 bytes (for forms with 1024-bit discriminant). This shrinks the size of VDF outputs and VDF proofs, and it's a breaking change as the compressed representation is not compatible with the older uncompressed (a, b) representation. Compressed forms are also used in calls to chiavdf and in timelord's communication with VDF clients. The form compression algorithm is based on ["Trustless Groups of Unknown Order with Hyperelliptic Curves"](https://eprint.iacr.org/2020/196) by Samuel Dobson, Steven D. Galbraith and Benjamin Smith.
+- We have moved to compressed quadratic forms for VDFs. Using compressed representation of quadratic forms reduces their serialized size from 130 to 100 bytes (for forms with 1024-bit discriminant). This shrinks the size of VDF outputs and VDF proofs, and it's a breaking change as the compressed representation is not compatible with the older uncompressed (a, b) representation. Compressed forms are also used in calls to goldcoinvdf and in timelord's communication with VDF clients. The form compression algorithm is based on ["Trustless Groups of Unknown Order with Hyperelliptic Curves"](https://eprint.iacr.org/2020/196) by Samuel Dobson, Steven D. Galbraith and Benjamin Smith.
 - Last Attempted Proof on the Farm tab of the GUI now shows hours:minutes:seconds instead of just hours:minutes. This makes it much easier to see that your farmer is responding to recent challenges at a glance.
 - You can now send and receive transactions with the command line. Try `goldcoin wallet -h` to learn more. Also, `goldcoin wallet` now requires a third argument of `show`, therefor you will use `goldcoin wallet show` to see your wallet balance.
 - We have added the [Crowdin](https://crowdin.com/) translation platform to [goldcoin blockchain gui](https://crowdin.com/project/goldcoin-blockchain). We are still getting it fully set up, but helping to translate the GUI is going to be much easier.
 - Full Node > Connections in the GUI now shows the peak sub block height your connected peers believe they are at. A node syncing from you will not be at the true peak sub block height until it gets into sync.
 - `goldcoin init -c [directory]` will create new TLS certificates signed by your CA located in `[directory]`. Use this feature to configure a new remote harvester. Type `goldcoin init -h` to get instructions. Huge thanks to a very efficient @eFishCent for this quick and thorough pull request.
-- We build both MacOS x86_64 and MacOS universal wheels for chiapos, chiavdf, blpsy, and chiabip158 in Python 3.9. The universal build allows M1 Macs to run these dependencies in ARM64 native mode.
+- We build both MacOS x86_64 and MacOS universal wheels for goldcoinpos, goldcoinvdf, blpsy, and goldcoinbip158 in Python 3.9. The universal build allows M1 Macs to run these dependencies in ARM64 native mode.
 - On first run in the GUI (or when there are no plot directories) there is now an "Add Plot Directories" on the Farm tab also.
 
 ### Changed
 
 - We are moving away from the terms sub blocks and blocks in our new consensus. What used to be called sub blocks will now just be blocks. Some blocks are now also transaction blocks. This is simpler both in the code and to reason about. Not all the code or UI may have caught up yet.
-- This release has the final mainnet rewards schedule. During the first three years, each block winner will win 2 Tozt/ozt per block for a total of 9216 Tozt per day from 4608 challenges per day.
+- This release has the final mainnet rewards schedule. During the first three years, each block winner will win 2 TOZT/OZT per block for a total of 9216 TOZT per day from 4608 challenges per day.
 - Smart transactions now use an announcement instead of 'coin consumed' or lock methods.
-- The GUI is now in a separate submodule repository from goldcoin-blockchain, [goldcoin-blockchain-gui](https://github.com/pinksheetscrypto/goldcoin-blockchain-gui). The installers and install scripts have been updated and it continues to follow the same install steps. Note that the GUI directory will now be `goldcoin-blockchain-gui`. The workflow for this may be "touch and go" for people who use the git install methods over the short term.
+- The GUI is now in a separate submodule repository from goldcoin-blockchain, [goldcoin-blockchain-gui](https://github.com/Goldcoin-Network/goldcoin-blockchain-gui). The installers and install scripts have been updated and it continues to follow the same install steps. Note that the GUI directory will now be `goldcoin-blockchain-gui`. The workflow for this may be "touch and go" for people who use the git install methods over the short term.
 - Very large coin counts are now supported.
 - Various RPC endpoints have been renamed to follow our switch to "just blocks" from sub blocks.
 - We've made changes to the protocol handshake and the blockchain genesis process to support mainnet launch and running/farming more than one chain at a time. That also means we can't as easily determine when an old version of the peer tries to connect so we will put warnings in the logs for now.
@@ -663,7 +1003,7 @@ all fields that referred to sub blocks are changed to blocks.
 - The GUI was incorrectly reporting the time frame that the netspace estimate it displays utilizes. It is technically 312.5 minutes, on average, over the trailing 1000 sub blocks.
 - Coloured coins were not working in the new consensus.
 - Some Haswell processors do not have certain AVX extensions and therefor would not run.
-- The cli wallet, `goldcoin wallet`, was incorrectly displaying Tozt balances as if they were Coloured Coins.
+- The cli wallet, `goldcoin wallet`, was incorrectly displaying TOZT balances as if they were Coloured Coins.
 - We addressed [CVE-2020-28477](https://nvd.nist.gov/vuln/detail/CVE-2020-28477) in the GUI.
 - We made changes to CI to hopefully not repeat our skipped releases from the previous release cycle.
 
@@ -678,26 +1018,26 @@ all fields that referred to sub blocks are changed to blocks.
 
 ### Changed
 
-- Significant improvements have been made to how the full node handles the mempool. This generally cuts CPU usage of node by 2x or more. Part of this increase is that we have temporarily limited the size of transactions. If you want to test sending a transaction you should keep the value of your transaction below 20 Tozt as new consensus will cause you to use a lot of inputs. This will be returned to the expected level as soon as the integration of [clvm rust](https://github.com/pinksheetscrypto/clvm_rs) is complete.
-- We have changed the way TLS between nodes and between goldcoin services work. Each node now has two certificate authorities. One is a public, shared CA that signs the TLS certificates that every node uses to connect to other nodes on 8444 or 7999. You now also have a self generated private CA that must sign e.g. farmer and harvester's certificates. To run a remote harvester you need a new harvester key that is then signed by your private CA. We know this is not easy for remote harvester in this release but will address it quickly.
+- Significant improvements have been made to how the full node handles the mempool. This generally cuts CPU usage of node by 2x or more. Part of this increase is that we have temporarily limited the size of transactions. If you want to test sending a transaction you should keep the value of your transaction below 20 TOZT as new consensus will cause you to use a lot of inputs. This will be returned to the expected level as soon as the integration of [clvm rust](https://github.com/Goldcoin-Network/clvm_rs) is complete.
+- We have changed the way TLS between nodes and between goldcoin services work. Each node now has two certificate authorities. One is a public, shared CA that signs the TLS certificates that every node uses to connect to other nodes on 8444 or 58444. You now also have a self generated private CA that must sign e.g. farmer and harvester's certificates. To run a remote harvester you need a new harvester key that is then signed by your private CA. We know this is not easy for remote harvester in this release but will address it quickly.
 - We have changed the way we compile the proof of space plotter and added one additional optimization. On many modern processors this will mean that using the plotter with the `-e` flag will be 2-3% faster than the Beta 17 plotter on the same CPU. We have found this to be very sensitive to different CPUs but are now confident that, at worst, the Beta 24 plotter with `-e` will be the same speed as Beta 17 if not slightly faster on the same hardware. Huge thanks to @xorinox for meticulously tracking down and testing this.
 - If a peer is not responsive during sync, node will disconnect it.
 - Peers that have not sent data in the last hour are now disconnected.
-- We have made the "Help Translate" button in the GUI open in your default web browser and added instructions for adding new translations and more phrases in existing translations at that [URL](https://github.com/pinksheetscrypto/goldcoin-blockchain/tree/main/electron-react/src/locales). Try the "Help Translate" option on the language selection pull down to the left of the dark/light mode selection at the top right of the GUI.
+- We have made the "Help Translate" button in the GUI open in your default web browser and added instructions for adding new translations and more phrases in existing translations at that [URL](https://github.com/Goldcoin-Network/goldcoin-blockchain/tree/main/electron-react/src/locales). Try the "Help Translate" option on the language selection pull down to the left of the dark/light mode selection at the top right of the GUI.
 - Sync store now tracks all connected peers and removes them as they get removed.
-- The Rate Limited Wallet has been ported to new consensus and updated chialisp methods.
-- We are down to only one sub dependency that does not ship binary wheels for all four platforms. The only platform still impacted is ARM64 (generally Raspberry Pi) but that only means that you still need the minor build tools as outlined on the [wiki](https://github.com/pinksheetscrypto/goldcoin-blockchain/wiki/Raspberry-Pi).
+- The Rate Limited Wallet has been ported to new consensus and updated Goldcoinlisp methods.
+- We are down to only one sub dependency that does not ship binary wheels for all four platforms. The only platform still impacted is ARM64 (generally Raspberry Pi) but that only means that you still need the minor build tools as outlined on the [wiki](https://github.com/Goldcoin-Network/goldcoin-blockchain/wiki/Raspberry-Pi).
 - We upgraded to Electron 9.4.2 for the GUI.
 - We have upgraded to py-setproctitle 1.2.2. We now have binary wheels for setproctitle on all four platforms and make it a requirement in setup.py. It is run-time optional if you wish to disable it.
 
 ### Fixed
 
 - On the Farm page of the GUI Latest Block Challenge is now populated. This shows you the actual challenge that came from the Timelord. Index is the signage point index in the current slot. There are 64 signage points every 10 minutes on average where 32 sub blocks can be won.
-- Last Attempted Proof is now fixed. This will show you the last time one of your plots passed the [plot filter](https://github.com/pinksheetscrypto/goldcoin-blockchain/wiki/FAQ#what-is-the-plot-filter-and-why-didnt-my-plot-pass-it).
+- Last Attempted Proof is now fixed. This will show you the last time one of your plots passed the [plot filter](https://github.com/Goldcoin-Network/goldcoin-blockchain/wiki/FAQ#what-is-the-plot-filter-and-why-didnt-my-plot-pass-it).
 - Plot filename is now back in the Plots table of the GUI.
 - There was a bug in adding a sub block to weight proofs and an issue in the weight proof index.
 - Over time the node would think that there were no peers attached with peak sub block heights higher than 0.
-- There was a potential bug in Python 3.9.0 that required us to update blspy, chiapos, chiavdf, and chiabip158.
+- There was a potential bug in Python 3.9.0 that required us to update blspy, goldcoinpos, goldcoinvdf, and goldcoinbip158.
 - An off by one issue could cause syncing to ask for 1 sub block when it should ask for e.g. 32.
 - Short sync and backtrack sync both had various issues.
 - There was an edge case in bip158 handling.
@@ -728,7 +1068,7 @@ all fields that referred to sub blocks are changed to blocks.
 
 - On starting full node, the weight proof cache does not attempt to load all sub blocks. Startup times are noticeably improved though there remains a hesitation when validating the mempool. Our clvm Rust implementation, which will likely ship in the next release, will drop example processing times from 180 to 3 seconds.
 - Changes to weight proofs and sub block storage and cacheing required a new database schema. This will require a re-sync or obtaining a synced blockchain_v23.db.
-- clvm bytecode is now generated and confirmed that the checked-in clvm and chialisp code matches the CI compiled code.
+- clvm bytecode is now generated and confirmed that the checked-in clvm and GoldcoinLisp code matches the CI compiled code.
 - We have removed the '-r' flag from `goldcoin` as it was being overridden in most cases by the `-r` for restart flag to `goldcoin start`. Use `goldcoin --root-path` instead.
 - `goldcoin -h` now recommends `goldcoin netspace -d 192` which is approximately one hours worth of sub blocks. Use `-d 1000` to get the same estimate of netspace as the RPC and GUI.
 - `goldcoin show -c` now displays in MiB and the GUI has been changed to MiB to match.
@@ -816,19 +1156,19 @@ all fields that referred to sub blocks are changed to blocks.
 
 ### Added
 
-- Welcome to the new consensus. This release is an all but a full re-write of the blockchain in under 30 days. There is now only one tip of the blockchain but we went from two chains to three. Block times are now a little under a minute but there are a couple of sub blocks between each transaction block. A block is also itself a special kind of sub block and each sub block rewards the farmer who won it 1 Tozt. Sub blocks come, on average, about every 17 to 18 seconds.
-- Starting with this Beta, there are 4608 opportunities per day for a farmer to win 1 Tozt compared to Beta 18 where there were 288 opportunities per day for a farmer to win 16 Tozt.
-- There is a lot more information and explanation of the new consensus algorithm in the New Consensus Working Document linked from [goldcoin-network.net](https://goldcoin-network.net/). Among the improvements this gives the goldcoin blockchain are a much higher security level against all attacks, more frequent transaction blocks that have less time variation between them and are then buried under confirmations (sub blocks also count towards re-org security) much more quickly.
-- New consensus means this is a very hard fork. All of your Tozt from Beta 17/18 will be gone. Your plots and keys will work just fine however. You will have to sync to the new chain.
+- Welcome to the new consensus. This release is an all but a full re-write of the blockchain in under 30 days. There is now only one tip of the blockchain but we went from two chains to three. Block times are now a little under a minute but there are a couple of sub blocks between each transaction block. A block is also itself a special kind of sub block and each sub block rewards the farmer who won it 1 TOZT. Sub blocks come, on average, about every 17 to 18 seconds.
+- Starting with this Beta, there are 4608 opportunities per day for a farmer to win 1 TOZT compared to Beta 18 where there were 288 opportunities per day for a farmer to win 16 TOZT.
+- There is a lot more information and explanation of the new consensus algorithm in the New Consensus Working Document linked from [goldcoin-network.net](https://goldcoin-network.net/). Among the improvements this gives the Goldcoin blockchain are a much higher security level against all attacks, more frequent transaction blocks that have less time variation between them and are then buried under confirmations (sub blocks also count towards re-org security) much more quickly.
+- New consensus means this is a very hard fork. All of your TOZT from Beta 17/18 will be gone. Your plots and keys will work just fine however. You will have to sync to the new chain.
 - You now have to sync 16 times more "blocks" for every 5 minutes of historical time so syncing is slower than it was on the old chain. We're aware of this and will be speeding it up and addressing blockchain database growth in the nest couple of releases.
-- Prior to this Beta 19, we had block times that targeted 5 minutes and rewarded 16 Tozt to one farmer. Moving forward we have epoch times that target 10 minutes and reward 32 Tozt to 32 farmers about every 17-18 seconds over that period. This has subtle naming and UI impacts in various places.
+- Prior to this Beta 19, we had block times that targeted 5 minutes and rewarded 16 TOZT to one farmer. Moving forward we have epoch times that target 10 minutes and reward 32 TOZT to 32 farmers about every 17-18 seconds over that period. This has subtle naming and UI impacts in various places.
 - Total transaction throughput is still targeted at 2.1x Bitcoin's throughput per hour but you will get more confirmations on a transaction much faster. This release has the errata that it doesn't limit transaction block size correctly.
-- For testing purposes this chain is quickly halving block rewards. By the time you're reading this and using the chain, farmers and pools will be receiving less than 1 Tozt for each block won as if it were 15-20 years from now. Block rewards are given in two components, 7/8's to the pool key and 1/8 to the farmer. The farmer also receives any transaction fees from the block.
+- For testing purposes this chain is quickly halving block rewards. By the time you're reading this and using the chain, farmers and pools will be receiving less than 1 TOZT for each block won as if it were 15-20 years from now. Block rewards are given in two components, 7/8's to the pool key and 1/8 to the farmer. The farmer also receives any transaction fees from the block.
 - You can now plot in parallel using the GUI. A known limitation is that you can't yet specify that you want 4 sets of two parallel plots. Each parallel plot added starts immediately parallel. We will continue to improve this.
 - The GUI now warns if you attempt to create a plot smaller than k=32.
 - Added Chinese language localization (zh-cn). A big thank you to @goomario for their pull request!
 - You can now specify which private key to use for `goldcoin plots create`. After obtaining the fingerprint from `goldcoin keys show`, try `goldcoin plots create -a FINGERPRINT`. Thanks to @eFishCent for this pull request!
-- We use a faster hash to prime function for chiavdf from the current release of gmp-6.2.1 which we have upgraded chiavdf and blspy to support.
+- We use a faster hash to prime function for goldcoinvdf from the current release of gmp-6.2.1 which we have upgraded goldcoinvdf and blspy to support.
 - There is a new cli command - `goldcoin configure`. This allows you to update certain configuration details like log level in config.yaml from the command line. This is particularly useful in containerization and linux automation. Try `goldcoin configure -h`. Note that if goldcoin services are running and you issue this command you will have to restart them for changes to take effect but you can use this command in the venv when no services are running or call it directly by path in the venv without activating the venv. Expect the options for this command to expand.
 - We now fully support Python 3.9.
 
@@ -837,24 +1177,24 @@ all fields that referred to sub blocks are changed to blocks.
 - The Plot tab on the GUI is now the Plots tab. It starts out with a much more friendly new user wizard and otherwise keeps all of your farming plots listed here. Use the "+ ADD A PLOT" button in the top right to plot your second or later plot.
 - The new plots page offers advanced plotting options in the various "Show Advanced Options" fold outs.
 - The plotter supports the new bitfield back propagation method and the old method from Beta 17. To choose the old method add a `-e` to the command line or choose "Disable bitfield plotting" in "Show Advanced Options" of the Plots tab. Bitfield back propagation writes about 13% less total writes and can be faster on some slower hard drive temp spaces. For now, SSD temp space will likely plot faster with bitfield back propagation disabled. We will be returning to speed enhancements to the plotter as we approach and pass our mainnet launch.
-- The Farm tab in the GUI is significantly enhanced. Here you have a dashboard overview of your farm and your activity in response to challenges blockchain challnegs, how long it will take you - on average - to win a block, and how much Tozt you've won so far. Harvester and Full Node connections have moved to Advanced Options.
-- Harvester and farmer will start when the GUI starts instead of waiting for key selection if there are already keys available. This means you will start farming on reboot if you have the goldcoin application set to launch on start.
-- Testnet is now running at the primary port of 7999. Update your routers appropriately. This opens 8444 for mainnet.
+- The Farm tab in the GUI is significantly enhanced. Here you have a dashboard overview of your farm and your activity in response to challenges blockchain challnegs, how long it will take you - on average - to win a block, and how much TOZT you've won so far. Harvester and Full Node connections have moved to Advanced Options.
+- Harvester and farmer will start when the GUI starts instead of waiting for key selection if there are already keys available. This means you will start farming on reboot if you have the Goldcoin application set to launch on start.
+- Testnet is now running at the primary port of 58444. Update your routers appropriately. This opens 8444 for mainnet.
 - All networking code has been refactored and mostly moved to websockets.
 - RPCs and daemon now communicate over TLS with certificates that are generated into `~/.goldcoin/VERSION/config/`
 - We have moved to taproot across all of our transactions and smart transactions.
 - We have adopted chech32m encoding of keys and addresses in parallel to bitcoin's coming adoption of bech32m.
 - The rate limited wallet was updated and re-factored.
-- All appropriate chialisp smart transactions have been updated to use aggsig_me.
+- All appropriate Goldcoinlisp smart transactions have been updated to use aggsig_me.
 - Full node should be more aggressive about finding other peers.
 - Peer disconnect messages are now set to log level INFO down from WARNING.
-- chiavdf now allows passing in input to a VDF for new consensus.
-- sha256tree has been removed from chialisp.
+- goldcoinvdf now allows passing in input to a VDF for new consensus.
+- sha256tree has been removed from Goldcoinlisp.
 - `goldcoin show -s` has been refactored to support the new consensus.
 - `goldcoin netspace` has been refactored for new consensus.
 - aiohttp, clvm-tools, colorlog, concurrent-log-handler, keyring, cryptography, and sortedcontainers have been upgraded to their current versions.
 - Tests now place a cache of blocks and plots in the ~/.goldcoin/ directory to speed up total testing time.
-- Changes were made to chiapos to correctly support the new bitfiled backpropogation on FreeBSD and OpenBSD. With the exception of needing to work around python cryptography as outlined on the wiki, FreeBSD and OpenBSD should be able to compile and run goldcoin-blockchain.
+- Changes were made to goldcoinpos to correctly support the new bitfiled backpropogation on FreeBSD and OpenBSD. With the exception of needing to work around python cryptography as outlined on the wiki, FreeBSD and OpenBSD should be able to compile and run goldcoin-blockchain.
 - With the change to new consensus many components of the chain and local database are not yet stored optimally. Startup and sync times may be slower than usual so please be patient. This will improve next release.
 - Errata: Coinbase amount is missing from the GUI Block view.
 - Eratta: wallet Backup, and Fly-sync on the wallet are currently not working.
@@ -872,8 +1212,8 @@ all fields that referred to sub blocks are changed to blocks.
 ### Added
 
 - F1 generation in the plotter is now fully parallel for a small speedup.
-- We have bitfield optimized phase 2 of plotting. There is only about a 1% increase in speed from this change but there is a 12% decrease in writes with a penalty of 3% more reads. More details in [PR 120](https://github.com/pinksheetscrypto/chiapos/pull/120). Note that some sorts in phase 2 and phase 3 will now appear "out of order" and that is now expected behavior.
-- Partial support for Python 3.9. That includes new versions of goldcoin dependencies like chiabip158.
+- We have bitfield optimized phase 2 of plotting. There is only about a 1% increase in speed from this change but there is a 12% decrease in writes with a penalty of 3% more reads. More details in [PR 120](https://github.com/Goldcoin-Network/goldcoinpos/pull/120). Note that some sorts in phase 2 and phase 3 will now appear "out of order" and that is now expected behavior.
+- Partial support for Python 3.9. That includes new versions of Goldcoin dependencies like goldcoinbip158.
 
 ### Changed
 
@@ -882,7 +1222,7 @@ all fields that referred to sub blocks are changed to blocks.
 
 ### Fixed
 
-- A segfault caused by memory leaks in bls-library has been fixed. This should end the random farmer and harvester crashes over time as outlined in [Issue 500](https://github.com/pinksheetscrypto/goldcoin-blockchain/issues/500).
+- A segfault caused by memory leaks in bls-library has been fixed. This should end the random farmer and harvester crashes over time as outlined in [Issue 500](https://github.com/Goldcoin-Network/goldcoin-blockchain/issues/500).
 - Plotting could hang up retrying in an "error 0" state due to a bug in table handling in some edge cases.
 - CPU utilization as reported in the plotter is now accurate for Windows.
 - FreeBSD and OpenBSD should be able to build and install goldcoin-blockchain and its dependencies again.
@@ -896,25 +1236,25 @@ all fields that referred to sub blocks are changed to blocks.
 
 ### Fixed
 
-- In the GUI there was [a regression](https://github.com/pinksheetscrypto/goldcoin-blockchain/issues/484) that removed the scroll bar on the Plot page. The scroll bar has returned!
+- In the GUI there was [a regression](https://github.com/Goldcoin-Network/goldcoin-blockchain/issues/484) that removed the scroll bar on the Plot page. The scroll bar has returned!
 - In Dark Mode you couldn't read the white on white plotting log text.
 - To fix a bug in Beta 15's plotter we introduced a fixed that slowed plotting by as much as 25%.
 - Certain NTFS root mount points couldn't be used for plotting or farming.
-- Logging had [a regression](https://github.com/pinksheetscrypto/goldcoin-blockchain/issues/485) where log level could no longer be set by service.
+- Logging had [a regression](https://github.com/Goldcoin-Network/goldcoin-blockchain/issues/485) where log level could no longer be set by service.
 
 ## [1.0beta16] aka Beta 1.16 - 2020-10-20
 
 ### Added
 
-- The goldcoin GUI now supports dark and light mode.
-- The GUI now supports translations and localizations. If you'd like to add your language you can see the examples in [the locales directory](https://github.com/pinksheetscrypto/goldcoin-blockchain/tree/dev/electron-react/src/locales) of the goldcoin-blockchain repository.
+- The Goldcoin GUI now supports dark and light mode.
+- The GUI now supports translations and localizations. If you'd like to add your language you can see the examples in [the locales directory](https://github.com/Goldcoin-Network/goldcoin-blockchain/tree/dev/electron-react/src/locales) of the goldcoin-blockchain repository.
 - `goldcoin check plots` now takes a `-g` option that allows you to specify a matching path string to only check a single plot file, a wild card list of plot files, or all plots in a single directory instead of the default behavior of checking every directory listed in your config.yaml. A big thank you to @eFishCent for this pull request!
 - Better documentation of the various timelord options in the default config.yaml.
 
 ### Changed
 
 - The entire GUI has been refactored for code quality and performance.
-- Updated to chiapos 0.12.32. This update significantly speeds up the F1/first table plot generation. It also now can log disk usage while plotting and generate graphs. More details in the [chiapos release notes](https://github.com/pinksheetscrypto/chiapos/releases/tag/0.12.32).
+- Updated to goldcoinpos 0.12.32. This update significantly speeds up the F1/first table plot generation. It also now can log disk usage while plotting and generate graphs. More details in the [goldcoinpos release notes](https://github.com/Goldcoin-Network/goldcoinpos/releases/tag/0.12.32).
 - Node losing or not connecting to another peer node (which is entirely normal behaviour) is now logged at INFO and not WARNING. Your logs will be quieter.
 - Both the GUI and CLI now default to putting the second temporary directory files into the specified temporary directory.
 - SSL Certificate handling was refactored along with Consensus constants, service launching, and internal configuration management.
@@ -926,7 +1266,7 @@ all fields that referred to sub blocks are changed to blocks.
 
 - A bug in bls-singatures/blspy could cause a stack overflow if too many signatures were verified at once. This caused the block of death at 11997 of the Beta 15 chain. Updated to 0.2.4 to address the issue.
 - GUI Wallet now correctly updates around reorgs.
-- chiapos 0.12.32 fixed a an out of bounds read that could crash the plotter. It also contains a fix to better handle the case of drive letters on Windows.
+- goldcoinpos 0.12.32 fixed a an out of bounds read that could crash the plotter. It also contains a fix to better handle the case of drive letters on Windows.
 - Node would fail to start on Windows Server 2016 with lots of cores. This [python issue explains]( https://bugs.python.org/issue26903) the problem.
 
 ### Known Issues
@@ -959,11 +1299,11 @@ all fields that referred to sub blocks are changed to blocks.
 - The rate limited wallet library now supports coin aggregation for adding additional funds after the time of creation.
 - Fees are now used in all applicable rate limited wallet calls
 - New parameters for plotting: -r (number of threads) -s (stripe size) -u (number of buckets) in cli and GUI
-- chiavdf now has full IFMA optimizations for processors that support it.
+- goldcoinvdf now has full IFMA optimizations for processors that support it.
 
 ### Changed
 
-- Multithreading support in chiapos, as well as a new algorithm which is faster and does 70% less IO. This is a significant improvement in speed, much lower total writing, and configurability for different hardware environments.
+- Multithreading support in goldcoinpos, as well as a new algorithm which is faster and does 70% less IO. This is a significant improvement in speed, much lower total writing, and configurability for different hardware environments.
 - Default -b changed to 3072 to improve performance
 - The correct amount of memory is used for plotting
 - `sh install.sh` was upgraded so that on Ubuntu it will install any needed OS dependencies.
@@ -977,9 +1317,9 @@ all fields that referred to sub blocks are changed to blocks.
 
 - Temporary space required for each k size was updated with more accurate estimates.
 - Tables in the README.MD were not rendering correctly on Pypi. Thanks again @altendky.
-- chiapos issue where memory was spiking and increasing
+- Goldcoinpos issue where memory was spiking and increasing
 - Fixed working space estimates so they are exact
-- Log all errors in chiapos
+- Log all errors in goldcoinpos
 - Fixed a bug that was causing Bluebox vdfs to fail.
 
 ## [1.0beta13] aka Beta 1.13 - 2020-09-15
@@ -1001,7 +1341,7 @@ all fields that referred to sub blocks are changed to blocks.
 ### Added
 
 - Rate limited wallets can now have unspent and un-spendable funds clawed back by the Admin wallet.
-- You can now backup your wallet related metadata in an encrypted and signed file to a free service from goldcoin Network at backup.goldcoin-network.net. Simply having a backup of your private key will allow you to fully restore the state of your wallet including coloured coins, rate limited wallets, distributed identity wallets and many more. Your private key is used to automatically restore the last backup you saved to the goldcoin backup cloud service. This service is open source and ultimately you will be able to configure your backups to go to backup.goldcoin-network.net, your own installation, or a third party's version of it.
+- You can now backup your wallet related metadata in an encrypted and signed file to a free service from Goldcoin Network at backup.goldcoin-network.net. Simply having a backup of your private key will allow you to fully restore the state of your wallet including coloured coins, rate limited wallets, distributed identity wallets and many more. Your private key is used to automatically restore the last backup you saved to the Goldcoin backup cloud service. This service is open source and ultimately you will be able to configure your backups to go to backup.goldcoin-network.net, your own installation, or a third party's version of it.
 - Added a Code of Conduct in CODE_OF_CONDUCT.md.
 - Added a bug report template in `.github/ISSUE_TEMPLATE/bug_report.md`.
 
@@ -1016,7 +1356,7 @@ all fields that referred to sub blocks are changed to blocks.
 - Coloured coins have been updated to simplify them, remove 'a', and stop using an 'auditor'.
 - clvm has been significantly changed to support the new coloured coins implementation.
 - Bumped cryptography to 3.1. Cryptography is now publishing ARM64 binary wheels to PyPi so Raspberry Pi installs should be even easier.
-- `goldcoin init` now automatically disozters previous releases in each new release.
+- `goldcoin init` now automatically discovers previous releases in each new release.
 
 ### Fixed
 
@@ -1024,13 +1364,13 @@ all fields that referred to sub blocks are changed to blocks.
 - View -> Developer -> Developer Tools now correctly opens the developer tools. Thank you to @roxaaams for this pull request!
 - Fixed 'Receive Address' typo in Wallet. Thanks @meurtn on Keybase.
 - Fixed a typo in `goldcoin show -w` with thanks to @pyl on Keybase.
-- In Windows the start menu item is now goldcoin Network and the icon in Add/Remove is updated.
+- In Windows the start menu item is now Goldcoin Network and the icon in Add/Remove is updated.
 
 ## [1.0beta11] aka Beta 1.11 - 2020-08-24
 
 ### Added
 
-- The goldcoin UI now has a proper About menu entry that gives the various component versions and directs people to submit issues on GitHub. Thank you to @freddiecoleman for this pull request!
+- The Goldcoin UI now has a proper About menu entry that gives the various component versions and directs people to submit issues on GitHub. Thank you to @freddiecoleman for this pull request!
 - Ability to run only the farmer, wallet, or timelord services, for more advanced configurations (goldcoin run farmer-only, wallet-only, timelord-only)
 
 ### Changed
@@ -1053,13 +1393,13 @@ all fields that referred to sub blocks are changed to blocks.
 - We've added unhardened HD keys to bls-signatures for the smart wallets that need them. We've added significant cross project testing to our BLS implementation.
 - The python implementation of bls-signatures is now current to the new specification.
 - `goldcoin show -b` now returns plot public key and pool public key for each block.
-- Added cbor2 binary wheels for ARM64 to the goldcoin simple site. Raspberry Pi should be just a little easier to install.
+- Added cbor2 binary wheels for ARM64 to the Goldcoin simple site. Raspberry Pi should be just a little easier to install.
 
 ### Changed
 
-- Wallet addresses and other key related elements are now expressed in Chech32 which is the goldcoin implementation of [Bech32](https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki). All of your old wallet addresses will be replaced with the new Chech32 addresses. The only thing you can't do is send test goldcoin between 1.8/1.9 and 1.10 software. Anyone who upgrades to 1.10 will keep their transactions and balances of test goldcoin from the earlier two releases however.
+- Wallet addresses and other key related elements are now expressed in Chech32 which is the Goldcoin implementation of [Bech32](https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki). All of your old wallet addresses will be replaced with the new Chech32 addresses. The only thing you can't do is send test goldcoin between 1.8/1.9 and 1.10 software. Anyone who upgrades to 1.10 will keep their transactions and balances of test goldcoin from the earlier two releases however.
 - We added a first few enhancements to plotting speed. For a k=30 on a ramdisk with `-b 64 GiB` it results in an 11% speedup in overall plotting speed and a 23% improvement in phase 1 speed. Many more significant increases in plotting speed are in the works.
-- The proof of space document in chiapos has been updated to the new format and edited for clarity. Additionally GitHub actions now has the on demand ability to create the PDF version.
+- The proof of space document in goldcoinpos has been updated to the new format and edited for clarity. Additionally GitHub actions now has the on demand ability to create the PDF version.
 - Relic has upstreamed our changes required for the IETF BLS standard. We now build directly from the Relic repository for all but Windows and will be migrating Windows in the next release.
 - Minor improvements to the Coloured Coin wallet were integrated in advance of an upcoming re-factor.
 - Smart wallet backup was upgraded to encrypt and sign the contents of the backup.
@@ -1068,8 +1408,8 @@ all fields that referred to sub blocks are changed to blocks.
 
 - Proof of space plotting now correctly calculates the total working space used in the `-t` directory.
 - `goldcoin show -w` now displays a message when balances cannot be displayed instead of throwing an error. Thanks to @freddiecoleman for this fix!
-- Fix issue with shutting down full node (full node processes remained open, and caused a spinner when launching goldcoin)
-- Various code review alerts for comparing to a wider type in chiapos were fixed. Additionally, unused code was removed from chiapos
+- Fix issue with shutting down full node (full node processes remained open, and caused a spinner when launching Goldcoin)
+- Various code review alerts for comparing to a wider type in goldcoinpos were fixed. Additionally, unused code was removed from goldcoinpos
 - Benchmarking has been re-enabled in bls-signatures.
 - Various node security vulnerabilities were addressed.
 - Updated keyring, various GitHub actions, colorlog, cbor2, and clvm_tools.
@@ -1125,7 +1465,7 @@ the now deprecated AES methods. This should increase plotting speed and support
 more processors.
 - Plot refreshing happens during all new challenges and only new/modified files
 are read.
-- Updated [blspy](https://github.com/pinksheetscrypto/bls-signatures) to use the
+- Updated [blspy](https://github.com/Goldcoin-Network/bls-signatures) to use the
 new [IETF standard for BLS signatures](https://tools.ietf.org/html/draft-irtf-cfrg-bls-signature-02).
 - Added a faster VDF process which generates n-wesolowski proofs quickly
 after the VDF result is known. This requires a high number of CPUs. To use it,
@@ -1144,7 +1484,7 @@ specify so you'll have to add any subfolders you want to also contain plots.
 - The UI now asks for confirmation before closing and shows shutdown progress.
 - UI now tries to shut down servers gracefully before exiting, and also closes
 the daemon before starting.
-- The various sub repositories (chiapos, chiavdf, etc.) now build ARM64 binary
+- The various sub repositories (goldcoinpos, goldcoinvdf, etc.) now build ARM64 binary
 wheels for Linux with Python 3.8. This makes installing on Ubuntu 20.04 lts on
 a Raspberry Pi 3 or 4 easy.
 - Ci's check to see if they have secret access and attempt to fail cleanly so
@@ -1154,15 +1494,15 @@ that ci runs successfully complete from PRs or forked repositories.
 we expect to add in future releases.
 - The goldcoin executable is now available if installing from the Windows or MacOS
 Graphical installer. Try `./goldcoin -h` from
-`~\AppData\Local\goldcoin-Blockchain\app-0.1.8\resources\app.asar.unpacked\daemon\`
+`~\AppData\Local\Goldcoin-Blockchain\app-0.1.8\resources\app.asar.unpacked\daemon\`
 in Windows or
-`/Applications/goldcoin.app/Contents/Resources/app.asar.unpacked/daemon` on MacOS.
+`/Applications/Goldcoin.app/Contents/Resources/app.asar.unpacked/daemon` on MacOS.
 
 ### Changed
 
 - Minor changes have been made across the repositories to better support
 compiling on OpenBSD. HT @n1000.
-- Changed ozt units to Tozt units for testnet.
+- Changed OZT units to TOZT units for testnet.
 - A push to a branch will cancel all ci runs still running for that branch.
 - Ci's now cache pip and npm caches between runs.
 - Improve test speed with smaller discriminants, less blocks, less keys, and
@@ -1189,7 +1529,7 @@ farmer and full node protocols.
 other chains.
 - Keys are now derived with the EIP 2334 (m/12381/8444/a/b).
 - Removed the ability to pass in sk_seed to plotting, to increase security.
-- Linux builds of chiavdf and blspy now use a fresh build of gmp 6.2.1.
+- Linux builds of goldcoinvdf and blspy now use a fresh build of gmp 6.2.1.
 
 ### Fixed
 
@@ -1227,7 +1567,7 @@ relic. We will make a patch available for these systems shortly.
 - Added ability to import private keys in the UI.
 - Added ability to see private keys and mnemonic seeds in the keys menu
 - User can specify log level in the config file (defaults to info.)
-- The Windows installer is now signed by a goldcoin Network certificate. It may take some time to develop enough reputation to not warn multiple times during install.
+- The Windows installer is now signed by a Goldcoin Network certificate. It may take some time to develop enough reputation to not warn multiple times during install.
 
 ### Changed
 
@@ -1235,12 +1575,12 @@ relic. We will make a patch available for these systems shortly.
 - We have made performance improvements to plotting speed on all platforms.
 - The command line plotter now supports specifying it's memory buffer size.
 - Test plots for the simulation and testing harness now go into `~/.goldcoin/test-plots/`
-- We have completely refactored all networking code towards making each goldcoin service use the same default networking infrastructure and move to websockets as the default networking wire protocol.
+- We have completely refactored all networking code towards making each Goldcoin service use the same default networking infrastructure and move to websockets as the default networking wire protocol.
 - We added additional improvements and more RPCs to the start daemon and various services to continue to make goldcoin start/stop reliable cross platform.
 - The install.sh script now discovers if it's running on Ubuntu less than 20.04 and correctly upgrades node.js to the current stable version.
 - For GitHub ci builds of the Windows installer, editbin.exe is more reliably found.
 - All installer ci builds now obtain version information automatically from setuptools_scm and convert it to an installer version number that is appropriate for the platform and type of release (dev versus release.)
-- We now codesign the Apple .dmg installer with the goldcoin Network developer ID on both GitHub Actions and Azure Pipelines. We will be notarizing and distributing the Azure Pipelines version as it's built on MacOS Mojave (10.14.6) for stronger cross version support.
+- We now codesign the Apple .dmg installer with the Goldcoin Network developer ID on both GitHub Actions and Azure Pipelines. We will be notarizing and distributing the Azure Pipelines version as it's built on MacOS Mojave (10.14.6) for stronger cross version support.
 
 ### Fixed
 
@@ -1266,7 +1606,7 @@ relic. We will make a patch available for these systems shortly.
 - We added total network storage space estimation to the node RPC at the `/get_network_space` endpoint instead of only being available in the cli. The RPC endpoint takes two block header hashes and estimates space between those header hashes.
 - Logs now autorotate. Once the debug.log reaches 20MB it is compressed and archived keeping 7 historical 20MB logs.
 - We now have a CHANGELOG.md that adheres closely to the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standard. We merged in the version history and updated some previous release notes to capture items important to the change log. We are modifying our release process to accumulate changes at the top of the change log and then copy those to the release notes at the time of the release.
-- We added [lgtm](https://lgtm.com/) source analysis on pull request to the goldcoin-blockchain, chiapos, chiavdf, chiabip158, and bls-library repositories to add some automated security analysis to our ci.
+- We added [lgtm](https://lgtm.com/) source analysis on pull request to the goldcoin-blockchain, goldcoinpos, goldcoinvdf, goldcoinbip158, and bls-library repositories to add some automated security analysis to our ci.
 
 ### Changed
 
@@ -1279,7 +1619,7 @@ relic. We will make a patch available for these systems shortly.
   current LCA. Optionally you can use the `-b` flag to start the calculation from a different block
   height. Use `-d` to specify the delta number of blocks back into history to estimate over from either LCA or your `-b` block height.
 - The Full node RPC response formats have been changed. All API calls now return a dict with success, and an additional value, for example {"success": True, "block": block}.
-- chiapos is now easier to compile with MSVC.
+- goldcoinpos is now easier to compile with MSVC.
 - create plots now takes in an optional sk_seed, it is no longer read in from keys.yaml. If not passed in, it is randomly generated. The -i argument can now only be used when you provide an sk_seed.
 - Moved to PyYAML 5.3.1 which prevents arbitrary code execution during python/object/new constructor.
 - Moved to Python cryptography 2.9.2 which deprecates OpenSSL 1.0.1 and now relies upon OpenSSL 1.1.1g.
@@ -1312,13 +1652,13 @@ relic. We will make a patch available for these systems shortly.
 - We have implemented a workaround for the `goldcoin start` issues some were having upon crash or reboot. We will be rebuilding start and stop to be robust across platforms.
 - This release re-includes `goldcoin-start-harvester`.
 - Coloured coins now have a prefix to help identify them. When sending transactions, the new prefix is incompatible with older clients.
-- The user interface now refers to goldcoin coins with their correct currency code of ozt.
+- The user interface now refers to goldcoin coins with their correct currency code of OZT.
 - The next release will now be in the dev branch instead of the e.g. beta-1.5. Additionally we are enforcing linear merge into dev and prefer rebase merges or partial squash merges of particularly chatty commit histories.
-- Building the sub reposities (chiapos, chiavdf, blslibrary) now requires CMake 3.14+.
+- Building the sub reposities (goldcoinpos, goldcoinvdf, blslibrary) now requires CMake 3.14+.
 
 ### Fixed
 
-- There was a regression in goldcoin Proof of Space ([chiapos](https://github.com/pinksheetscrypto/chiapos)) that came from our efforts to speed up plotting on Windows native. Now k>=32 plots work correctly. We made additional bug fixes and corrected limiting small k size generation.
+- There was a regression in Goldcoin Proof of Space ([goldcoinpos](https://github.com/Goldcoin-Network/goldcoinpos)) that came from our efforts to speed up plotting on Windows native. Now k>=32 plots work correctly. We made additional bug fixes and corrected limiting small k size generation.
 - There was a bug in Timelord handling that could stop all VDF progress.
 
 ### Deprecated
@@ -1334,7 +1674,7 @@ relic. We will make a patch available for these systems shortly.
 
 ### Added
 
-- This release adds Coloured coin support with offers. Yes that is the correct spelling. Coloured coins allow you to issue a coin, token, or asset with nearly unlimited issuance plans and functionality. They support inner smart transactions so they can inherit any of the other functionality you can implement in chialisp. Offers are especially cool as they create a truly decentralized exchange capability. Read much more about them in Bram's [blog post on Coloured coins](https://goldcoin-network.net/2020/04/29/coloured-coins-launch.en.html).
+- This release adds Coloured coin support with offers. Yes that is the correct spelling. Coloured coins allow you to issue a coin, token, or asset with nearly unlimited issuance plans and functionality. They support inner smart transactions so they can inherit any of the other functionality you can implement in Goldcoinlisp. Offers are especially cool as they create a truly decentralized exchange capability. Read much more about them in Bram's [blog post on Coloured coins](https://goldcoin-network.net/2020/04/29/coloured-coins-launch.en.html).
 - This release adds support for native Windows via a (mostly) automated installer and MacOS Mojave. Windows still requires some PowerShell command line use. You should expect ongoing improvements in ease of install and replication of the command line tools in the GUI. Again huge thanks to @dkackman for continued Windows installer development. Native Windows is currently slightly slower than the same version running in WSL 2 on the same machine for both block verification and plotting.
 - We made some speed improvements that positively affected all platforms while trying to increase plotting speed in Windows.
 - The graphical Full Node display now shows the expected finish times of each of the prospective chain tips.
@@ -1342,15 +1682,15 @@ relic. We will make a patch available for these systems shortly.
 - We’ve added TLS authentication for incoming farmer connections. TLS certs and keys are generated during goldcoin init and only full nodes with your keys will be able to connect to your Farmer. Also, Harvester, Timelord, and Wallet will now not accept incoming connections which reduces the application attack surface.
 - The node RPC has a new endpoint get_header_by_height which allows you to retrieve the block header from a block height. Try `goldcoin show -bh 1000` to see the block header hash of block 1000. You can then look up the block details with `goldcoin show -b f655e1a9f7f8c89a703e40d9ce82ae33508badaf7b37fa1a56cad27926b5e936` which will look up a block by it's header hash.
 - Our Windows binaries check the processor they are about to run on at runtime and choose the best processor optimizations for our [MPIR](http://mpir.org/) VDF dependency on Windows.
-- Most of the content of README.md and INSTALL.md have been moved to the [repository wiki](https://github.com/pinksheetscrypto/goldcoin-blockchain/wiki) and placed in [INSTALL](https://github.com/pinksheetscrypto/goldcoin-blockchain/wiki/INSTALL) and [Quick Start Guide](https://github.com/pinksheetscrypto/goldcoin-blockchain/wiki/Quick-Start-Guide)
+- Most of the content of README.md and INSTALL.md have been moved to the [repository wiki](https://github.com/Goldcoin-Network/goldcoin-blockchain/wiki) and placed in [INSTALL](https://github.com/Goldcoin-Network/goldcoin-blockchain/wiki/INSTALL) and [Quick Start Guide](https://github.com/Goldcoin-Network/goldcoin-blockchain/wiki/Quick-Start-Guide)
 - Harvester is now asynchronous and will better be able to look up more plots spread across more physical drives.
 - Full node startup time has been sped up significantly by optimizing the loading of the blockchain from disk.
 
 ### Changed
 
 - Most scripts have been removed in favor of goldcoin action commands. You can run `goldcoin version` or `goldcoin start node` for example. Just running `goldcoin` will show you more options. However `goldcoin-create-plots` continues to use the hyphenated form. Also it's now `goldcoin generate keys` as another example.
-- goldcoin start commands like `goldcoin start farmer` and `goldcoin stop node` now keep track of process IDs in a run/ directory in your configuration directory. `goldcoin stop` is unlikely to work on Windows native for now. If `goldcoin start -r node` doesn't work you can force the run/ directory to be reset with `goldcoin start -f node`.
-- We suggest you take a look at our [Upgrading documentation](https://github.com/pinksheetscrypto/goldcoin-blockchain/wiki/Updating-beta-software) if you aren't performing a new install.
+- Goldcoin start commands like `goldcoin start farmer` and `goldcoin stop node` now keep track of process IDs in a run/ directory in your configuration directory. `goldcoin stop` is unlikely to work on Windows native for now. If `goldcoin start -r node` doesn't work you can force the run/ directory to be reset with `goldcoin start -f node`.
+- We suggest you take a look at our [Upgrading documentation](https://github.com/Goldcoin-Network/goldcoin-blockchain/wiki/Updating-beta-software) if you aren't performing a new install.
 - blspy now has libsodium included in the MacOS and Linux binary wheels.
 - miniupnpc and setprotitle were dynamically checked for an installed at runtime. Removed those checks and we rely upon the install tools installing them before first run.
 - Windows wheels that the Windows Installer packages are also available in the ci Artifacts in a .zip file.
@@ -1362,7 +1702,7 @@ relic. We will make a patch available for these systems shortly.
 
 ### Known issues
 
-- Plots of k>=32 are not working for farming, and some broken plots can cause a memory leak. A [workaround is available](https://github.com/pinksheetscrypto/goldcoin-blockchain/wiki/Beta-1.4-k=32-or-larger-work-around).
+- Plots of k>=32 are not working for farming, and some broken plots can cause a memory leak. A [workaround is available](https://github.com/Goldcoin-Network/goldcoin-blockchain/wiki/Beta-1.4-k=32-or-larger-work-around).
 - If you are running a simulation, blockchain tips are not saved in the database and this is a regression. If you stop a node it can go back in time and cause an odd state. This doesn't practically effect testnet participation as, on restart, node will just sync up a few blocks to the then current tips.
 - uPnP support on Windows may be broken. However, Windows nodes will be able to connect to other nodes and, once connected, participate fully in the network.
 - Coins are not currently reserved as part of trade offers and thus could potentially be spent before the offer is accepted resulting in a failed offer transaction.
@@ -1376,7 +1716,7 @@ relic. We will make a patch available for these systems shortly.
 - Windows, WSL 2, Linux and MacOS installation is significantly streamlined. There is a new Windows installer for the Wallet GUI (huge thanks to @dkackman).
 - All installs can now be from the source repository or just the binary dependencies on WSL 2, most modern Linuxes, and MacOS Catalina. Binary support is for both Python 3.7 and 3.8.
 - There is a new migration tool to move from Beta1 (or 2) to Beta3. It should move everything except your plots.
-- There is a new command `goldcoin init` that will migrate files and generate your initial configuration. If you want to use the Wallet or farm, you will also have to `goldcoin-generate-keys`. You can read step by step instructions for [upgrading from a previous beta release](https://github.com/pinksheetscrypto/goldcoin-blockchain/wiki/Updating-beta-software). If you've set `$GOLDCOIN_ROOT` you will have to make sure your existing configuration remains compatible manually.
+- There is a new command `goldcoin init` that will migrate files and generate your initial configuration. If you want to use the Wallet or farm, you will also have to `goldcoin-generate-keys`. You can read step by step instructions for [upgrading from a previous beta release](https://github.com/Goldcoin-Network/goldcoin-blockchain/wiki/Updating-beta-software). If you've set `$GOLDCOIN_ROOT` you will have to make sure your existing configuration remains compatible manually.
 - Wallet has improved paper wallet recovery support.
 - We now also support restoring old wallets with only the wallet_sk and wallet_target. Beta3's Wallet will re-sync from scratch.
 - We've made lots of little improvements that should speed up node syncing
@@ -1413,7 +1753,7 @@ relic. We will make a patch available for these systems shortly.
 
 ### Added
 
-- There is now full transaction support on the goldcoin blockchain. In this initial Beta 1.0 release, all transaction types are supported though the wallets and UIs currently only directly support basic transactions like coinbase rewards and sending coins while paying fees. UI support for our [smart transactions](https://github.com/pinksheetscrypto/wallets/blob/main/README.md) will be available in the UIs shortly.
+- There is now full transaction support on the Goldcoin blockchain. In this initial Beta 1.0 release, all transaction types are supported though the wallets and UIs currently only directly support basic transactions like coinbase rewards and sending coins while paying fees. UI support for our [smart transactions](https://github.com/Goldcoin-Network/wallets/blob/main/README.md) will be available in the UIs shortly.
 - Wallet and Node GUI’s are available on Windows, Mac, and desktop Linux platforms. We now use an Electron UI that is a full light client wallet that can also serve as a node UI. Our Windows Electron Wallet can run standalone by connecting to other nodes on the network or another node you run. WSL 2 on Windows can run everything except the Wallet but you can run the Wallet on the native Windows side of the same machine. Also the WSL 2 install process is 3 times faster and _much_ easier. Windows native node/farmer/plotting functionality are coming soon.
 - Install is significantly easier with less dependencies on all supported platforms.
 - If you’re a farmer you can use the Wallet to keep track of your earnings. Either use the same keys.yaml on the same machine or copy the keys.yaml to another machine where you want to track of and spend your coins.
@@ -1421,20 +1761,20 @@ relic. We will make a patch available for these systems shortly.
 
 ### Changed
 
-- We have revamped the goldcoin management command line. To start a farmer all you have to do is start the venv with `. ./activate` and then type `goldcoin-start-farmer &`. The [README.md](https://github.com/pinksheetscrypto/goldcoin-blockchain/blob/main/README.md) has been updated to reflect the new commands.
+- We have revamped the goldcoin management command line. To start a farmer all you have to do is start the venv with `. ./activate` and then type `goldcoin-start-farmer &`. The [README.md](https://github.com/Goldcoin-Network/goldcoin-blockchain/blob/main/README.md) has been updated to reflect the new commands.
 - We have moved all node to node communication to TLS 1.3 by default. For now, all TLS is unauthenticated but certain types of over the wire node to node communications will have the ability to authenticate both by certificate and by inter protocol signature. Encrypting over the wire by default stops casual snooping of transaction origination, light wallet to trusted node communication, and harvester-farmer-node communication for example. This leaves only the mempool and the chain itself open to casual observation by the public and the various entities around the world.
 - Configuration directories have been moved to a default location of HomeDirectory/.goldcoin/release/config, plots/ db/, wallet/ etc. This can be overridden by `export GOLDCOIN_ROOT=~/.goldcoin` for example which would then put the plots directory in `HomeDirectory/.goldcoin/plots`.
-- The libraries goldcoin-pos, goldcoin-fast-vdf, and goldcoin-bip-158 have been moved to their own repositories: [chiapos](https://github.com/pinksheetscrypto/chiapos), [chiavdf](https://github.com/pinksheetscrypto/chiavdf), and [chaibip158](https://github.com/pinksheetscrypto/chiabip158). They are brought in by goldcoin-blockchain at install time. Our BLS signature library remains at [bls-signatures](https://github.com/pinksheetscrypto/bls-signatures).
-- The install process now brings in chiapos, chiavdf, etc from Pypi where they are auto published via GitHub Actions ci using cibuildwheel. Check out `.github/workflows/build.yml` for build methods in each of the sub repositories.
+- The libraries goldcoin-pos, goldcoin-fast-vdf, and goldcoin-bip-158 have been moved to their own repositories: [goldcoinpos](https://github.com/Goldcoin-Network/goldcoinpos), [goldcoinvdf](https://github.com/Goldcoin-Network/goldcoinvdf), and [chaibip158](https://github.com/Goldcoin-Network/goldcoinbip158). They are brought in by goldcoin-blockchain at install time. Our BLS signature library remains at [bls-signatures](https://github.com/Goldcoin-Network/bls-signatures).
+- The install process now brings in goldcoinpos, goldcoinvdf, etc from Pypi where they are auto published via GitHub Actions ci using cibuildwheel. Check out `.github/workflows/build.yml` for build methods in each of the sub repositories.
 - `goldcoin-regenerate-keys` has been renamed `goldcoin-generate-keys`.
 - setproctitle is now an optional install dependency that we will continue to install in the default install methods.
 - The project now defaults to `venv` without the proceeding . to better match best practices.
 - Developer requirements were separated from the actual requirements.
-- `install-timelord.sh` has been pulled out from `install.sh`. This script downloads the source python package for chiavdf and compiles it locally for timelords. vdf_client can be included or excluded to make building normal user wheels easier.
+- `install-timelord.sh` has been pulled out from `install.sh`. This script downloads the source python package for goldcoinvdf and compiles it locally for timelords. vdf_client can be included or excluded to make building normal user wheels easier.
 
 ### Removed
 
-- The Beta release is not compatible with the history of the Alpha blockchain and we will be ceasing support of the Alpha chain approximately two weeks after the release of this Beta. However, your plots and keys are fully compatible with the Beta chain. Please save your plot keys! Examples of how to save your keys and upgrade to the Beta are available on the [repo wiki](https://github.com/pinksheetscrypto/goldcoin-blockchain/wiki).
+- The Beta release is not compatible with the history of the Alpha blockchain and we will be ceasing support of the Alpha chain approximately two weeks after the release of this Beta. However, your plots and keys are fully compatible with the Beta chain. Please save your plot keys! Examples of how to save your keys and upgrade to the Beta are available on the [repo wiki](https://github.com/Goldcoin-Network/goldcoin-blockchain/wiki).
 - The ssh ui and web ui are removed in favor of the cli ui and the Electron GUI. To mimic the ssh ui try `goldcoin show -s -c` and try `goldcoin show --help` for usage instructions.
 - We have removed the inkfish vdf implementation and replaced it with the pybind11 C++ version.
 
@@ -1456,8 +1796,8 @@ relic. We will make a patch available for these systems shortly.
 - You can now provide an index to create_plots using the -i flag to create an arbitrary new plot derived from an existing plot key. Thanks @xorinox.
 - There is a new restart_harvester.sh in scripts/ to easily restart a harvester when you want to add a newly completed plot to the farm without restarting farmer, fullnode, timelord, etc.
 - Harvesters now log errors if they encounter a malformed or corrupted plot file. Again thanks @xorinox.
-- New AJAX based full node UI. To access go to [http://127.0.0.1:8555/index.html](http://127.0.0.1:8555/index.html) with any modern web browser on the same machine as the full node.
-- If you want to benchmark your CPU as a VDF you can use vdf_bench square_asm 500000 for the assembly optimized test or just vdf_bench square 500000 for the plain C++ code path. This tool is found in lib/chiavdf/fast_vdf/.
+- New AJAX based full node UI. To access go to [http://127.0.0.1:7758/index.html](http://127.0.0.1:7758/index.html) with any modern web browser on the same machine as the full node.
+- If you want to benchmark your CPU as a VDF you can use vdf_bench square_asm 500000 for the assembly optimized test or just vdf_bench square 500000 for the plain C++ code path. This tool is found in lib/goldcoinvdf/fast_vdf/.
 - Improvements to shutting down services in all of the scripts in scripts/. Another @xorinox HT.
 
 ### Changed
@@ -1493,7 +1833,7 @@ relic. We will make a patch available for these systems shortly.
 - Due to changes to the sqlite database that are not backwards compatible, re-synch will be required.
 - Loading the blockchain only loads headers into memory instead of header blocks (header + proofs), speeds up the startup, and reduces normal operation memory usage by 80%.
 - Memory access is now synchronous to reduce use of locks and speed up block processing.
-- goldcoin fullnode, farmer and harvester now default to logging to goldcoin.log in the goldcoin-blockchain directory. This is configured in config.yaml and due to config.yaml changes it is recommended to edit the new template config instead of using older config.yaml’s from previous versions.
+- Goldcoin fullnode, farmer and harvester now default to logging to goldcoin.log in the goldcoin-blockchain directory. This is configured in config.yaml and due to config.yaml changes it is recommended to edit the new template config instead of using older config.yaml’s from previous versions.
 - uvloop is now an optional add on.
 - Harvester/farmer will not try to farm plots that they don’t have the key for.
 
@@ -1507,8 +1847,8 @@ relic. We will make a patch available for these systems shortly.
 ### Added
 
 - FullNode performance improvements - Syncing up to the blockchain by importing all blocks is faster due to improvements in VDF verification speed and multithreading block verification.
-- VDF improvements - VDF verification and generation speed has increased and dependence on flint2 has been removed. We wish to thank Dr. William Hart (@wbhart) for dual licensing parts of his contributions in FLINT and Antic for inclusion in the goldcoin blockchain.
-- Implemented an RPC interface with JSON serialization for streamables - currently on port 8555.
+- VDF improvements - VDF verification and generation speed has increased and dependence on flint2 has been removed. We wish to thank Dr. William Hart (@wbhart) for dual licensing parts of his contributions in FLINT and Antic for inclusion in the Goldcoin blockchain.
+- Implemented an RPC interface with JSON serialization for streamables - currently on port 7758.
 - Added details on how to contribute in CONTRIBUTING.md. Thanks @RichardLitt.
 - Added color logging
 - Now goldcoin_harvester will periodically announce which plots it is currently farming and their k sizes.
@@ -1588,21 +1928,21 @@ relic. We will make a patch available for these systems shortly.
 
 ### Added
 
-- This is the first release of the goldcoin testnet! Blockchain consensus, proof of time, and proof of space are included.
+- This is the first release of the Goldcoin testnet! Blockchain consensus, proof of time, and proof of space are included.
 - More details on the release at [https://www.goldcoin-network.net/developer/](https://www.goldcoin-network.net/developer/)
 
-[unreleased]: https://github.com/pinksheetscrypto/goldcoin-blockchain/compare/1.0beta5...dev
-[1.0beta5]: https://github.com/pinksheetscrypto/goldcoin-blockchain/compare/1.0beta4...1.0beta5
-[1.0beta4]: https://github.com/pinksheetscrypto/goldcoin-blockchain/compare/1.0beta3...1.0beta4
-[1.0beta3]: https://github.com/pinksheetscrypto/goldcoin-blockchain/compare/1.0beta2...1.0beta3
-[1.0beta2]: https://github.com/pinksheetscrypto/goldcoin-blockchain/compare/1.0beta1...1.0beta2
-[1.0beta1]: https://github.com/pinksheetscrypto/goldcoin-blockchain/compare/alpha-1.5.1...1.0beta1
-[alpha 1.5.1]: https://github.com/pinksheetscrypto/goldcoin-blockchain/compare/alpha-1.5...alpha-1.5.1
-[alpha 1.5]: https://github.com/pinksheetscrypto/goldcoin-blockchain/compare/alpha-1.4.1...alpha-1.5
-[alpha 1.4.1]: https://github.com/pinksheetscrypto/goldcoin-blockchain/compare/alpha-1.4...alpha-1.4.1
-[alpha 1.4]: https://github.com/pinksheetscrypto/goldcoin-blockchain/compare/alpha-1.3...alpha-1.4
-[alpha 1.3]: https://github.com/pinksheetscrypto/goldcoin-blockchain/compare/alpha-1.2...alpha-1.3
-[alpha 1.2]: https://github.com/pinksheetscrypto/goldcoin-blockchain/compare/alpha-1.1.1...alpha-1.2
-[alpha 1.1.1]: https://github.com/pinksheetscrypto/goldcoin-blockchain/compare/alpha-1.1...alpha-1.1.1
-[alpha 1.1]: https://github.com/pinksheetscrypto/goldcoin-blockchain/compare/alpha-1.0...alpha-1.1
-[alpha 1.0]: https://github.com/pinksheetscrypto/goldcoin-blockchain/releases/tag/Alpha-1.0
+[unreleased]: https://github.com/Goldcoin-Network/goldcoin-blockchain/compare/1.0beta5...dev
+[1.0beta5]: https://github.com/Goldcoin-Network/goldcoin-blockchain/compare/1.0beta4...1.0beta5
+[1.0beta4]: https://github.com/Goldcoin-Network/goldcoin-blockchain/compare/1.0beta3...1.0beta4
+[1.0beta3]: https://github.com/Goldcoin-Network/goldcoin-blockchain/compare/1.0beta2...1.0beta3
+[1.0beta2]: https://github.com/Goldcoin-Network/goldcoin-blockchain/compare/1.0beta1...1.0beta2
+[1.0beta1]: https://github.com/Goldcoin-Network/goldcoin-blockchain/compare/alpha-1.5.1...1.0beta1
+[alpha 1.5.1]: https://github.com/Goldcoin-Network/goldcoin-blockchain/compare/alpha-1.5...alpha-1.5.1
+[alpha 1.5]: https://github.com/Goldcoin-Network/goldcoin-blockchain/compare/alpha-1.4.1...alpha-1.5
+[alpha 1.4.1]: https://github.com/Goldcoin-Network/goldcoin-blockchain/compare/alpha-1.4...alpha-1.4.1
+[alpha 1.4]: https://github.com/Goldcoin-Network/goldcoin-blockchain/compare/alpha-1.3...alpha-1.4
+[alpha 1.3]: https://github.com/Goldcoin-Network/goldcoin-blockchain/compare/alpha-1.2...alpha-1.3
+[alpha 1.2]: https://github.com/Goldcoin-Network/goldcoin-blockchain/compare/alpha-1.1.1...alpha-1.2
+[alpha 1.1.1]: https://github.com/Goldcoin-Network/goldcoin-blockchain/compare/alpha-1.1...alpha-1.1.1
+[alpha 1.1]: https://github.com/Goldcoin-Network/goldcoin-blockchain/compare/alpha-1.0...alpha-1.1
+[alpha 1.0]: https://github.com/Goldcoin-Network/goldcoin-blockchain/releases/tag/Alpha-1.0

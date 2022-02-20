@@ -42,8 +42,22 @@ if (-not (Test-Path env:GOLDCOIN_INSTALLER_VERSION)) {
   $env:GOLDCOIN_INSTALLER_VERSION = '0.0.0'
   Write-Output "WARNING: No environment variable GOLDCOIN_INSTALLER_VERSION set. Using 0.0.0"
   }
-Write-Output "goldcoin Version is: $env:GOLDCOIN_INSTALLER_VERSION"
+Write-Output "Goldcoin Version is: $env:GOLDCOIN_INSTALLER_VERSION"
 Write-Output "   ---"
+
+Write-Output "Checking if madmax exists"
+Write-Output "   ---"
+if (Test-Path -Path .\madmax\) {
+    Write-Output "   madmax exists, moving to expected directory"
+    mv .\madmax\ .\venv\lib\site-packages\
+}
+
+Write-Output "Checking if bladebit exists"
+Write-Output "   ---"
+if (Test-Path -Path .\bladebit\) {
+    Write-Output "   bladebit exists, moving to expected directory"
+    mv .\bladebit\ .\venv\lib\site-packages\
+}
 
 Write-Output "   ---"
 Write-Output "Build goldcoin-blockchain wheels"
@@ -72,8 +86,21 @@ pyinstaller --log-level INFO $SPEC_FILE
 Write-Output "   ---"
 Write-Output "Copy goldcoin executables to goldcoin-blockchain-gui\"
 Write-Output "   ---"
-Copy-Item "dist\daemon" -Destination "..\goldcoin-blockchain-gui\" -Recurse
+Copy-Item "dist\daemon" -Destination "..\goldcoin-blockchain-gui\packages\gui\" -Recurse
+
+Write-Output "   ---"
+Write-Output "Setup npm packager"
+Write-Output "   ---"
+Set-Location -Path ".\npm_windows" -PassThru
+npm ci
+$Env:Path = $(npm bin) + ";" + $Env:Path
+Set-Location -Path "..\" -PassThru
+
 Set-Location -Path "..\goldcoin-blockchain-gui" -PassThru
+# We need the code sign cert in the gui subdirectory so we can actually sign the UI package
+If ($env:HAS_SECRET) {
+    Copy-Item "win_code_sign_cert.p12" -Destination "packages\gui\"
+}
 
 git status
 
@@ -81,10 +108,11 @@ Write-Output "   ---"
 Write-Output "Prepare Electron packager"
 Write-Output "   ---"
 $Env:NODE_OPTIONS = "--max-old-space-size=3000"
-npm install --save-dev electron-winstaller
-npm install -g electron-packager
-npm install
-npm audit fix
+
+lerna clean -y
+npm ci
+# Audit fix does not currently work with Lerna. See https://github.com/lerna/lerna/issues/1663
+# npm audit fix
 
 git status
 
@@ -96,6 +124,9 @@ If ($LastExitCode -gt 0){
     Throw "npm run build failed!"
 }
 
+# Change to the GUI directory
+Set-Location -Path "packages\gui" -PassThru
+
 Write-Output "   ---"
 Write-Output "Increase the stack for goldcoin command for (goldcoin plots create) chiapos limitations"
 # editbin.exe needs to be in the path
@@ -106,6 +137,15 @@ $packageVersion = "$env:GOLDCOIN_INSTALLER_VERSION"
 $packageName = "Goldcoin-$packageVersion"
 
 Write-Output "packageName is $packageName"
+
+Write-Output "   ---"
+Write-Output "fix version in package.json"
+choco install jq
+cp package.json package.json.orig
+jq --arg VER "$env:GOLDCOIN_INSTALLER_VERSION" '.version=$VER' package.json > temp.json
+rm package.json
+mv temp.json package.json
+Write-Output "   ---"
 
 Write-Output "   ---"
 Write-Output "electron-packager"
@@ -130,6 +170,12 @@ If ($env:HAS_SECRET) {
 }
 
 git status
+
+Write-Output "   ---"
+Write-Output "Moving final installers to expected location"
+Write-Output "   ---"
+Copy-Item ".\Goldcoin-win32-x64" -Destination "$env:GITHUB_WORKSPACE\goldcoin-blockchain-gui\" -Recurse
+Copy-Item ".\release-builds" -Destination "$env:GITHUB_WORKSPACE\goldcoin-blockchain-gui\" -Recurse
 
 Write-Output "   ---"
 Write-Output "Windows Installer complete"

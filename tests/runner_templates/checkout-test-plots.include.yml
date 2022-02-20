@@ -1,0 +1,14 @@
+    - name: Checkout test blocks and plots
+      uses: actions/checkout@v2
+      with:
+        repository: 'Goldcoin-Network/test-cache'
+        path: '.goldcoin'
+        ref: '0.28.0'
+        fetch-depth: 1
+
+    - name: Link home directory
+      run: |
+        cd $HOME
+        ln -s $GITHUB_WORKSPACE/.goldcoin
+        echo "$HOME/.goldcoin"
+        ls -al $HOME/.goldcoin

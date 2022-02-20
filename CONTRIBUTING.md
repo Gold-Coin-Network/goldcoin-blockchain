@@ -1,13 +1,13 @@
 # Introduction
 
 Welcome to the goldcoin-blockchain project!
-We are happy that you are taking a look at the code for goldcoin, a proof of space and time cryptocurrency.
+We are happy that you are taking a look at the code for Goldcoin, a proof of space and time cryptocurrency.
 
 A lot of fascinating new cryptography and blockchain concepts are used and implemented here.
-This repo includes the code for the goldcoin full node, farmer, and timelord (in goldcoin folder), which are all written in python.
-It also includes a verifiable delay function implementation that it imports from the [chiavdf repo](https://github.com/pinksheetscrypto/chiavdf) (in c/c++), and a proof of space implementation that it imports from the [chiapos repo](https://github.com/pinksheetscrypto/chiapos). BLS signatures are imported from the [bls-signatures repo](https://github.com/pinksheetscrypto/bls-signatures) as blspy. There is an additional dependency on the [chiabip158 repo](https://github.com/pinksheetscrypto/chiabip158). For major platforms, binary and source wheels are shipped to PyPI from each dependent repo. Then goldcoin-blockchain can pip install those from PyPI or they can be prepackaged as is done for the Windows installer. On unsupported platforms, pip will fall back to the source distributions, to be compiled locally.
+This repo includes the code for the Goldcoin full node, farmer, and timelord (in goldcoin folder), which are all written in python.
+It also includes a verifiable delay function implementation that it imports from the [goldcoinvdf repo](https://github.com/Goldcoin-Network/goldcoinvdf) (in c/c++), and a proof of space implementation that it imports from the [goldcoinpos repo](https://github.com/Goldcoin-Network/goldcoinpos). BLS signatures are imported from the [bls-signatures repo](https://github.com/Goldcoin-Network/bls-signatures) as blspy. There is an additional dependency on the [goldcoinbip158 repo](https://github.com/Goldcoin-Network/goldcoinbip158). For major platforms, binary and source wheels are shipped to PyPI from each dependent repo. Then goldcoin-blockchain can pip install those from PyPI or they can be prepackaged as is done for the Windows installer. On unsupported platforms, pip will fall back to the source distributions, to be compiled locally.
 
-If you want to learn more about this project, read the [wiki](https://github.com/pinksheetscrypto/goldcoin-blockchain/wiki), or check out the [green paper](https://www.goldcoin-network.net/assets/goldcoinGreenPaper.pdf).
+If you want to learn more about this project, read the [wiki](https://github.com/Goldcoin-Network/goldcoin-blockchain/wiki), or check out the [green paper](https://www.goldcoin-network.net/assets/GoldcoinGreenPaper.pdf).
 
 ## Contributions
 
@@ -23,9 +23,9 @@ Contact any of the team members on [Keybase](https://keybase.io/team/goldcoin_ne
 
 We ask that external contributors create a fork of the `main` branch for any feature work they wish to take on.
 
-Members of the goldcoin organization may create feature branches from the `main` branch.
+Members of the Goldcoin organization may create feature branches from the `main` branch.
 
-In the event an emergency fix is required for the release version of goldcoin, members of the goldcoin organization will create a feature branch from the current release branch `1.0.0`.
+In the event an emergency fix is required for the release version of Goldcoin, members of the Goldcoin organization will create a feature branch from the current release branch `1.0.0`.
 
 ## Branching Strategy
 
@@ -34,7 +34,7 @@ In the event an emergency fix is required for the release version of goldcoin, m
 1. All changes go into the main branch.
 2. Main is stable at all times, all tests pass.
 3. Features (with tests) are developed and fully tested on feature branches, and reviewed before landing in main.
-4. goldcoin Network's nodes on the public testnet are running the latest version `x.y.z`.
+4. Goldcoin Network's nodes on the public testnet are running the latest version `x.y.z`.
 5. The `main` branch will have a long running `beta testnet` to allow previewing of changes.
 6. Pull Request events may require a `beta testnet` review environment. At the moment this is at the discretion of the reviewer.
 7. Hotfixes land in the release branch they fix, and all later versions. (This will be achieved by regularly merging from `1.0.x` to main).
@@ -58,12 +58,13 @@ py.test tests -v --durations 0
 The [black library](https://black.readthedocs.io/en/stable/) is used as an automatic style formatter to make things easier.
 The [flake8 library](https://readthedocs.org/projects/flake8/) helps ensure consistent style.
 The [Mypy library](https://mypy.readthedocs.io/en/stable/) is very useful for ensuring objects are of the correct type, so try to always add the type of the return value, and the type of local variables.
+The [isort library](https://isort.readthedocs.io) is used to sort, group and validate imports in all python files.
 
 If you want verbose logging for tests, edit the `tests/pytest.ini` file.
 
 ## Pre-Commit
 
-We provide a [pre-commit configuration](https://github.com/goldcoin-Network/goldcoin-blockchain/blob/main/.pre-commit-config.yaml) which triggers several useful
+We provide a [pre-commit configuration](https://github.com/Goldcoin-Network/goldcoin-blockchain/blob/main/.pre-commit-config.yaml) which triggers several useful
 hooks (including linters/formatter) before each commit you make if you installed and set up [pre-commit](https://pre-commit.com/). This will help
 to reduce the time you spend on failed CI jobs.
 
@@ -92,24 +93,24 @@ workflow.
 3. Install BlackConnect plugin
 4. Set to run python black on save
 5. Set line length to 120
-6. Install these linters https://github.com/pinksheetscrypto/goldcoin-blockchain/tree/main/.github/linters
+6. Install these linters https://github.com/Goldcoin-Network/goldcoin-blockchain/tree/main/.github/linters
 
 ## Testnets and review environments
 
-With the launch of `1.0.0` we will begin running an official `testnet`.  
+With the launch of `1.0.0` we will begin running an official `testnet`.
 Prior to the release of `1.1.0` there will be two running test nets. `testnet` and `transaction-beta-testnet`. The `transaction-beta-testnet` testnet will be a beta of the pending 1.1 release, which will enable transactions on the goldcoin blockchain.
 Following the release of `1.1.0`, the official `testnet` will include all changes that have been accepted to the current release branch.
 
 Prior to proposing changes to `main`, proposers should consider if running a `beta testnet` review environment will make the reviewer more effective when evaluating a change.
 Changes that impact the blockchain could require a review environment before acceptance into `main`. This is at the discretion of the reviewer.
-goldcoin organization members have been granted CI access to deploy `beta testnets`.
-If you are not a goldcoin organization member, you can enquire about deploying a `beta testnet` in the public dev Keybase channel.
+Goldcoin organization members have been granted CI access to deploy `beta testnets`.
+If you are not a Goldcoin organization member, you can enquire about deploying a `beta testnet` in the public dev Keybase channel.
 
 ## Submit changes
 
 To propose changes, please make a pull request to the `main` branch. See Branching Strategy above.
 
-To propose changes for the production releases of goldcoin, please make a pull request to the latest release branch.
+To propose changes for the production releases of Goldcoin, please make a pull request to the latest release branch.
 
 ## Copyright
 

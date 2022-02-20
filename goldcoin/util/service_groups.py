@@ -10,10 +10,12 @@ SERVICES_FOR_GROUP = {
     "timelord": "goldcoin_timelord_launcher goldcoin_timelord goldcoin_full_node".split(),
     "timelord-only": "goldcoin_timelord".split(),
     "timelord-launcher-only": "goldcoin_timelord_launcher".split(),
-    "wallet": "goldcoin_wallet goldcoin_full_node".split(),
-    "wallet-only": "goldcoin_wallet".split(),
+    "wallet": "goldcoin_wallet".split(),
     "introducer": "goldcoin_introducer".split(),
     "simulator": "goldcoin_full_node_simulator".split(),
+    "crawler": "goldcoin_crawler".split(),
+    "seeder": "goldcoin_crawler goldcoin_seeder".split(),
+    "seeder-only": "goldcoin_seeder".split(),
 }
 
 

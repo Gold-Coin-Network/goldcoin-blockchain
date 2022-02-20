@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from typing import Any, List
 
+from clvm.casts import int_to_bytes
+
 from goldcoin.types.blockchain_format.sized_bytes import bytes32
-from goldcoin.util.clvm import int_to_bytes
 from goldcoin.util.hash import std_hash
 from goldcoin.util.ints import uint64
 from goldcoin.util.streamable import Streamable, streamable

@@ -8,12 +8,10 @@ from goldcoin.types.blockchain_format.program import Program, SerializedProgram
 wallet_program_files = set(
     [
         "goldcoin/wallet/puzzles/calculate_synthetic_public_key.clvm",
-        "goldcoin/wallet/puzzles/cc.clvm",
-        "goldcoin/wallet/puzzles/chialisp_deserialisation.clvm",
+        "goldcoin/wallet/puzzles/cat.clvm",
+        "goldcoin/wallet/puzzles/goldcoinlisp_deserialisation.clvm",
         "goldcoin/wallet/puzzles/rom_bootstrap_generator.clvm",
         "goldcoin/wallet/puzzles/generator_for_single_coin.clvm",
-        "goldcoin/wallet/puzzles/genesis-by-coin-id-with-0.clvm",
-        "goldcoin/wallet/puzzles/genesis-by-puzzle-hash-with-0.clvm",
         "goldcoin/wallet/puzzles/lock.inner.puzzle.clvm",
         "goldcoin/wallet/puzzles/p2_conditions.clvm",
         "goldcoin/wallet/puzzles/p2_delegated_conditions.clvm",
@@ -37,6 +35,14 @@ wallet_program_files = set(
         "goldcoin/wallet/puzzles/pool_member_innerpuz.clvm",
         "goldcoin/wallet/puzzles/singleton_launcher.clvm",
         "goldcoin/wallet/puzzles/p2_singleton_or_delayed_puzhash.clvm",
+        "goldcoin/wallet/puzzles/genesis_by_puzzle_hash.clvm",
+        "goldcoin/wallet/puzzles/everything_with_signature.clvm",
+        "goldcoin/wallet/puzzles/delegated_tail.clvm",
+        "goldcoin/wallet/puzzles/settlement_payments.clvm",
+        "goldcoin/wallet/puzzles/genesis_by_coin_id.clvm",
+        "goldcoin/wallet/puzzles/genesis-by-puzzle-hash-with-0.clvm",
+        "goldcoin/wallet/puzzles/delegated_genesis_checker.clvm",
+        "goldcoin/wallet/puzzles/genesis-by-coin-id-with-0.clvm",
     ]
 )
 

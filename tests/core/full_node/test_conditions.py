@@ -3,6 +3,7 @@ These are quick-to-run test that check spends can be added to the blockchain whe
 or that they're failing for the right reason when they're invalid.
 """
 
+import atexit
 import logging
 import time
 
@@ -14,7 +15,6 @@ from blspy import G2Element
 
 from clvm_tools.binutils import assemble
 
-from goldcoin.consensus.blockchain import ReceiveBlockResult
 from goldcoin.consensus.constants import ConsensusConstants
 from goldcoin.types.announcement import Announcement
 from goldcoin.types.blockchain_format.program import Program
@@ -23,14 +23,23 @@ from goldcoin.types.coin_spend import CoinSpend
 from goldcoin.types.condition_opcodes import ConditionOpcode
 from goldcoin.types.full_block import FullBlock
 from goldcoin.types.spend_bundle import SpendBundle
-from tests.block_tools import BlockTools, test_constants
 from goldcoin.util.errors import Err
 from goldcoin.util.ints import uint32
+from tests.block_tools import create_block_tools, test_constants
+from tests.util.keyring import TempKeyring
 
 from .ram_db import create_ram_blockchain
+from ...blockchain.blockchain_test_utils import _validate_and_add_block
 
 
-bt = BlockTools(constants=test_constants)
+def cleanup_keyring(keyring: TempKeyring):
+    keyring.cleanup()
+
+
+temp_keyring = TempKeyring()
+keychain = temp_keyring.get_keychain()
+atexit.register(cleanup_keyring, temp_keyring)  # Attempt to cleanup the temp keychain
+bt = create_block_tools(constants=test_constants, keychain=keychain)
 
 
 log = logging.getLogger(__name__)
@@ -64,11 +73,10 @@ async def check_spend_bundle_validity(
     `SpendBundle`, and then invokes `receive_block` to ensure that it's accepted (if `expected_err=None`)
     or fails with the correct error code.
     """
+    connection, blockchain = await create_ram_blockchain(constants)
     try:
-        connection, blockchain = await create_ram_blockchain(constants)
         for block in blocks:
-            received_block_result, err, fork_height = await blockchain.receive_block(block)
-            assert err is None
+            await _validate_and_add_block(blockchain, block)
 
         additional_blocks = bt.get_consecutive_blocks(
             1,
@@ -78,23 +86,14 @@ async def check_spend_bundle_validity(
         )
         newest_block = additional_blocks[-1]
 
-        received_block_result, err, fork_height = await blockchain.receive_block(newest_block)
-
-        if fork_height:
-            coins_added = await blockchain.coin_store.get_coins_added_at_height(uint32(fork_height + 1))
-            coins_removed = await blockchain.coin_store.get_coins_removed_at_height(uint32(fork_height + 1))
+        if expected_err is None:
+            await _validate_and_add_block(blockchain, newest_block)
+            coins_added = await blockchain.coin_store.get_coins_added_at_height(uint32(len(blocks)))
+            coins_removed = await blockchain.coin_store.get_coins_removed_at_height(uint32(len(blocks)))
         else:
+            await _validate_and_add_block(blockchain, newest_block, expected_error=expected_err)
             coins_added = []
             coins_removed = []
-
-        if expected_err is None:
-            assert err is None
-            assert received_block_result == ReceiveBlockResult.NEW_PEAK
-            assert fork_height == len(blocks) - 1
-        else:
-            assert err == expected_err
-            assert received_block_result == ReceiveBlockResult.INVALID_BLOCK
-            assert fork_height is None
 
         return coins_added, coins_removed
 

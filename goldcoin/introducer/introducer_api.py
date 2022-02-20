@@ -4,7 +4,7 @@ from goldcoin.introducer.introducer import Introducer
 from goldcoin.protocols.introducer_protocol import RequestPeersIntroducer, RespondPeersIntroducer
 from goldcoin.protocols.protocol_message_types import ProtocolMessageTypes
 from goldcoin.server.outbound_message import Message, make_msg
-from goldcoin.server.ws_connection import WSgoldcoinConnection
+from goldcoin.server.ws_connection import WSGoldcoinConnection
 from goldcoin.types.peer_info import TimestampedPeerInfo
 from goldcoin.util.api_decorators import api_request, peer_required
 from goldcoin.util.ints import uint64
@@ -24,7 +24,7 @@ class IntroducerAPI:
     async def request_peers_introducer(
         self,
         request: RequestPeersIntroducer,
-        peer: WSgoldcoinConnection,
+        peer: WSGoldcoinConnection,
     ) -> Optional[Message]:
         max_peers = self.introducer.max_peers_to_send
         if self.introducer.server is None or self.introducer.server.introducer_peers is None:

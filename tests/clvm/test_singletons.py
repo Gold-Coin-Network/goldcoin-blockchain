@@ -8,9 +8,9 @@ from goldcoin.types.blockchain_format.program import Program
 from goldcoin.types.blockchain_format.sized_bytes import bytes32
 from goldcoin.types.blockchain_format.coin import Coin
 from goldcoin.types.coin_spend import CoinSpend
+from goldcoin.types.condition_opcodes import ConditionOpcode
 from goldcoin.types.spend_bundle import SpendBundle
 from goldcoin.util.errors import Err
-from goldcoin.util.condition_tools import ConditionOpcode
 from goldcoin.util.ints import uint64
 from goldcoin.consensus.default_constants import DEFAULT_CONSTANTS
 from goldcoin.wallet.lineage_proof import LineageProof

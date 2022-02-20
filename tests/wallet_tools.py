@@ -1,6 +1,7 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 
 from blspy import AugSchemeMPL, G2Element, PrivateKey
+from clvm.casts import int_from_bytes, int_to_bytes
 
 from goldcoin.consensus.constants import ConsensusConstants
 from goldcoin.util.hash import std_hash
@@ -12,8 +13,7 @@ from goldcoin.types.coin_spend import CoinSpend
 from goldcoin.types.condition_opcodes import ConditionOpcode
 from goldcoin.types.condition_with_args import ConditionWithArgs
 from goldcoin.types.spend_bundle import SpendBundle
-from goldcoin.util.clvm import int_from_bytes, int_to_bytes
-from goldcoin.util.condition_tools import conditions_by_opcode, conditions_for_solution, pkm_pairs_for_conditions_dict
+from goldcoin.util.condition_tools import conditions_by_opcode, conditions_for_solution
 from goldcoin.util.ints import uint32, uint64
 from goldcoin.wallet.derive_keys import master_sk_to_wallet_sk
 from goldcoin.wallet.puzzles.p2_delegated_puzzle_or_hidden_puzzle import (
@@ -75,7 +75,9 @@ class WalletTool:
 
     def get_new_puzzlehash(self) -> bytes32:
         puzzle = self.get_new_puzzle()
-        return puzzle.get_tree_hash()
+        # TODO: address hint error and remove ignore
+        #       error: "bytes32" has no attribute "get_tree_hash"  [attr-defined]
+        return puzzle.get_tree_hash()  # type: ignore[attr-defined]
 
     def sign(self, value: bytes, pubkey: bytes) -> G2Element:
         privatekey: PrivateKey = master_sk_to_wallet_sk(self.private_key, self.pubkey_num_lookup[pubkey])
@@ -86,7 +88,13 @@ class WalletTool:
 
         for con_list in condition_dic.values():
             for cvp in con_list:
-                ret.append([cvp.opcode.value] + cvp.vars)
+                if cvp.opcode == ConditionOpcode.CREATE_COIN and len(cvp.vars) > 2:
+                    formatted: List[Any] = []
+                    formatted.extend(cvp.vars)
+                    formatted[2] = cvp.vars[2:]
+                    ret.append([cvp.opcode.value] + formatted)
+                else:
+                    ret.append([cvp.opcode.value] + cvp.vars)
         return solution_for_conditions(Program.to(ret))
 
     def generate_unsigned_transaction(
@@ -133,7 +141,14 @@ class WalletTool:
             if n == 0:
                 message_list = [c.name() for c in coins]
                 for outputs in condition_dic[ConditionOpcode.CREATE_COIN]:
-                    message_list.append(Coin(coin.name(), outputs.vars[0], int_from_bytes(outputs.vars[1])).name())
+                    # TODO: address hint error and remove ignore
+                    #       error: Argument 2 to "Coin" has incompatible type "bytes"; expected "bytes32"  [arg-type]
+                    coin_to_append = Coin(
+                        coin.name(),
+                        outputs.vars[0],  # type: ignore[arg-type]
+                        int_from_bytes(outputs.vars[1]),
+                    )
+                    message_list.append(coin_to_append.name())
                 message = std_hash(b"".join(message_list))
                 condition_dic[ConditionOpcode.CREATE_COIN_ANNOUNCEMENT].append(
                     ConditionWithArgs(ConditionOpcode.CREATE_COIN_ANNOUNCEMENT, [message])
@@ -152,7 +167,7 @@ class WalletTool:
         signatures = []
         solution: Program
         puzzle: Program
-        for coin_spend in coin_spends:  # type: ignore # noqa
+        for coin_spend in coin_spends:  # noqa
             secret_key = self.get_private_key_for_puzzle_hash(coin_spend.coin.puzzle_hash)
             synthetic_secret_key = calculate_synthetic_secret_key(secret_key, DEFAULT_HIDDEN_PUZZLE_HASH)
             err, con, cost = conditions_for_solution(
@@ -162,11 +177,16 @@ class WalletTool:
                 raise ValueError(err)
             conditions_dict = conditions_by_opcode(con)
 
-            for _, msg in pkm_pairs_for_conditions_dict(
-                conditions_dict, bytes(coin_spend.coin.name()), self.constants.AGG_SIG_ME_ADDITIONAL_DATA
-            ):
+            for cwa in conditions_dict.get(ConditionOpcode.AGG_SIG_UNSAFE, []):
+                msg = cwa.vars[1]
                 signature = AugSchemeMPL.sign(synthetic_secret_key, msg)
                 signatures.append(signature)
+
+            for cwa in conditions_dict.get(ConditionOpcode.AGG_SIG_ME, []):
+                msg = cwa.vars[1] + bytes(coin_spend.coin.name()) + self.constants.AGG_SIG_ME_ADDITIONAL_DATA
+                signature = AugSchemeMPL.sign(synthetic_secret_key, msg)
+                signatures.append(signature)
+
         aggsig = AugSchemeMPL.aggregate(signatures)
         spend_bundle = SpendBundle(coin_spends, aggsig)
         return spend_bundle

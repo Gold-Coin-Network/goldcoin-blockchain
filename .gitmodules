@@ -1,6 +1,6 @@
 [submodule "goldcoin-blockchain-gui"]
 	path = goldcoin-blockchain-gui
-	url = https://github.com/pinksheetscrypto/goldcoin-blockchain-gui.git
+	url = https://github.com/Goldcoin-Network/goldcoin-blockchain-gui.git
 	branch = pools
 [submodule "mozilla-ca"]
 	path = mozilla-ca

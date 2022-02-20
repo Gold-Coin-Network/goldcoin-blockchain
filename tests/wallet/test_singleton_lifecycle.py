@@ -10,8 +10,8 @@ from goldcoin.types.announcement import Announcement
 from goldcoin.types.blockchain_format.coin import Coin
 from goldcoin.types.blockchain_format.sized_bytes import bytes32
 from goldcoin.types.coin_spend import CoinSpend
+from goldcoin.types.condition_opcodes import ConditionOpcode
 from goldcoin.types.spend_bundle import SpendBundle
-from goldcoin.util.condition_tools import ConditionOpcode
 
 from goldcoin.util.ints import uint64
 from goldcoin.wallet.puzzles.load_clvm import load_clvm
@@ -32,12 +32,9 @@ POOL_REWARD_PREFIX_MAINNET = bytes32.fromhex("ccd5bb71183532bff220ba46c268991a00
 
 
 def check_coin_spend(coin_spend: CoinSpend):
-    # breakpoint()
     try:
         cost, result = coin_spend.puzzle_reveal.run_with_cost(INFINITE_COST, coin_spend.solution)
     except Exception as ex:
-        print(ex)
-        # breakpoint()
         print(ex)
 
 
@@ -128,7 +125,6 @@ def test_only_odd_coins_0():
     assert launcher_coin in coin_set_removed
 
     assert farmed_coin in coin_set_removed
-    # breakpoint()
 
     singleton_expected_puzzle_hash = singleton_puzzle_hash(launcher_id, launcher_puzzle_hash, initial_singleton_puzzle)
     expected_singleton_coin = Coin(launcher_coin.name(), singleton_expected_puzzle_hash, launcher_amount)

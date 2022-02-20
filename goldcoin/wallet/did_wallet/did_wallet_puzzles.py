@@ -22,9 +22,11 @@ def create_innerpuz(pubkey: bytes, identities: List[bytes], num_of_backup_ids_ne
     return DID_INNERPUZ_MOD.curry(pubkey, backup_ids_hash, num_of_backup_ids_needed)
 
 
-def create_fullpuz(innerpuz, genesis_id) -> Program:
+def create_fullpuz(innerpuz: Program, genesis_id: bytes32) -> Program:
     mod_hash = SINGLETON_TOP_LAYER_MOD.get_tree_hash()
-    return SINGLETON_TOP_LAYER_MOD.curry(mod_hash, genesis_id, LAUNCHER_PUZZLE.get_tree_hash(), innerpuz)
+    # singleton_struct = (MOD_HASH . (LAUNCHER_ID . LAUNCHER_PUZZLE_HASH))
+    singleton_struct = Program.to((mod_hash, (genesis_id, LAUNCHER_PUZZLE.get_tree_hash())))
+    return SINGLETON_TOP_LAYER_MOD.curry(singleton_struct, innerpuz)
 
 
 def get_pubkey_from_innerpuz(innerpuz: Program) -> G1Element:
@@ -39,7 +41,7 @@ def get_pubkey_from_innerpuz(innerpuz: Program) -> G1Element:
 
 def is_did_innerpuz(inner_f: Program):
     """
-    You may want to generalize this if different `CC_MOD` templates are supported.
+    You may want to generalize this if different `CAT_MOD` templates are supported.
     """
     return inner_f == DID_INNERPUZ_MOD
 
@@ -50,7 +52,7 @@ def is_did_core(inner_f: Program):
 
 def uncurry_innerpuz(puzzle: Program) -> Optional[Tuple[Program, Program]]:
     """
-    Take a puzzle and return `None` if it's not a `CC_MOD` cc, or
+    Take a puzzle and return `None` if it's not a `CAT_MOD` cc, or
     a triple of `mod_hash, genesis_coin_checker, inner_puzzle` if it is.
     """
     r = puzzle.uncurry()
@@ -71,8 +73,8 @@ def get_innerpuzzle_from_puzzle(puzzle: Program) -> Optional[Program]:
     inner_f, args = r
     if not is_did_core(inner_f):
         return None
-    mod_hash, genesis_id, inner_puzzle = list(args.as_iter())
-    return inner_puzzle
+    SINGLETON_STRUCT, INNER_PUZZLE = list(args.as_iter())
+    return INNER_PUZZLE
 
 
 def create_recovery_message_puzzle(recovering_coin_id: bytes32, newpuz: bytes32, pubkey: G1Element):

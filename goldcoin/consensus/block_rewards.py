@@ -49,3 +49,4 @@ def calculate_base_farmer_reward(height: uint32) -> uint64:
         return uint64(int((1 / 8) * 0.25 * _mojo_per_goldcoin))
     else:
         return uint64(int((1 / 8) * 0.125 * _mojo_per_goldcoin))
+

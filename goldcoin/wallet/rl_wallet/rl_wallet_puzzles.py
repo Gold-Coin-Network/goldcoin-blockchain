@@ -7,7 +7,7 @@ from goldcoin.types.blockchain_format.program import Program
 from goldcoin.types.blockchain_format.sized_bytes import bytes32
 from goldcoin.types.condition_opcodes import ConditionOpcode
 from goldcoin.util.ints import uint64
-from goldcoin.wallet.chialisp import sexp
+from goldcoin.wallet.goldcoinlisp import sexp
 from goldcoin.wallet.puzzles.load_clvm import load_clvm
 
 RATE_LIMITED_MODE = 1

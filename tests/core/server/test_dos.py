@@ -3,6 +3,7 @@ import asyncio
 import logging
 
 import pytest
+import pytest_asyncio
 from aiohttp import ClientSession, ClientTimeout, ServerDisconnectedError, WSCloseCode, WSMessage, WSMsgType
 
 from goldcoin.full_node.full_node_api import FullNodeAPI
@@ -12,7 +13,7 @@ from goldcoin.protocols.shared_protocol import Handshake
 from goldcoin.server.outbound_message import make_msg, Message
 from goldcoin.server.rate_limits import RateLimiter
 from goldcoin.server.server import ssl_context_for_client
-from goldcoin.server.ws_connection import WSgoldcoinConnection
+from goldcoin.server.ws_connection import WSGoldcoinConnection
 from goldcoin.types.peer_info import PeerInfo
 from goldcoin.util.ints import uint16, uint64
 from goldcoin.util.errors import Err
@@ -38,9 +39,9 @@ def event_loop():
     yield loop
 
 
-@pytest.fixture(scope="function")
-async def setup_two_nodes():
-    async for _ in setup_simulators_and_wallets(2, 0, {}, starting_port=60000):
+@pytest_asyncio.fixture(scope="function")
+async def setup_two_nodes(db_version):
+    async for _ in setup_simulators_and_wallets(2, 0, {}, starting_port=60000, db_version=db_version):
         yield _
 
 
@@ -188,8 +189,8 @@ class TestDos:
 
         assert len(server_1.all_connections) == 1
 
-        ws_con: WSgoldcoinConnection = list(server_1.all_connections.values())[0]
-        ws_con_2: WSgoldcoinConnection = list(server_2.all_connections.values())[0]
+        ws_con: WSGoldcoinConnection = list(server_1.all_connections.values())[0]
+        ws_con_2: WSGoldcoinConnection = list(server_2.all_connections.values())[0]
 
         ws_con.peer_host = "1.2.3.4"
         ws_con_2.peer_host = "1.2.3.4"
@@ -241,8 +242,8 @@ class TestDos:
 
         assert len(server_1.all_connections) == 1
 
-        ws_con: WSgoldcoinConnection = list(server_1.all_connections.values())[0]
-        ws_con_2: WSgoldcoinConnection = list(server_2.all_connections.values())[0]
+        ws_con: WSGoldcoinConnection = list(server_1.all_connections.values())[0]
+        ws_con_2: WSGoldcoinConnection = list(server_2.all_connections.values())[0]
 
         ws_con.peer_host = "1.2.3.4"
         ws_con_2.peer_host = "1.2.3.4"
@@ -290,8 +291,8 @@ class TestDos:
 
         assert len(server_1.all_connections) == 1
 
-        ws_con: WSgoldcoinConnection = list(server_1.all_connections.values())[0]
-        ws_con_2: WSgoldcoinConnection = list(server_2.all_connections.values())[0]
+        ws_con: WSGoldcoinConnection = list(server_1.all_connections.values())[0]
+        ws_con_2: WSGoldcoinConnection = list(server_2.all_connections.values())[0]
 
         ws_con.peer_host = "1.2.3.4"
         ws_con_2.peer_host = "1.2.3.4"

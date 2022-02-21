@@ -100,7 +100,7 @@ jobs:
         result-encoding: string
         script: |
           const releases = await github.repos.listReleases({
-            owner: 'Goldcoin-Network',
+            owner: 'Chia-Network',
             repo: 'chia-plotter-madmax',
           });
           return releases.data[0].tag_name;
@@ -121,7 +121,7 @@ jobs:
         result-encoding: string
         script: |
           const releases = await github.repos.listReleases({
-            owner: 'Goldcoin-Network',
+            owner: 'Chia-Network',
             repo: 'bladebit',
           });
           return releases.data[0].tag_name;

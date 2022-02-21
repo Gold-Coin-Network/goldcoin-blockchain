@@ -127,11 +127,11 @@ If ($LastExitCode -gt 0){
 # Change to the GUI directory
 Set-Location -Path "packages\gui" -PassThru
 
-Write-Output "   ---"
-Write-Output "Increase the stack for goldcoin command for (goldcoin plots create) chiapos limitations"
+#Write-Output "   ---"
+#Write-Output "Increase the stack for goldcoin command for (goldcoin plots create) chiapos limitations"
 # editbin.exe needs to be in the path
-editbin.exe /STACK:8000000 daemon\goldcoin.exe
-Write-Output "   ---"
+#editbin.exe /STACK:8000000 daemon\goldcoin.exe
+#Write-Output "   ---"
 
 $packageVersion = "$env:GOLDCOIN_INSTALLER_VERSION"
 $packageName = "Goldcoin-$packageVersion"
